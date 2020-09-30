@@ -1,3 +1,8 @@
+--[[Virtual Component library.
+Made by gamax92
+Original here: https://github.com/OpenPrograms/gamax92-Programs/tree/master/vcomponent
+]]
+
 local component = require("component")
 local computer = require("computer")
 
