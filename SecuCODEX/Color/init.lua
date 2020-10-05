@@ -13,7 +13,7 @@ Minimal requirements to computer system:
  - Tier 2 Video Card
  - Tier 2 Monitor
  - Tier 1 Processor
- - Tier 1 Hard Drive
+ - Tier 1 Hard Drive or Floppy Disk
  - 1x Tier 1 Memory
  - Tier 1 Redstone Card or Redstone I/O block
 
@@ -181,6 +181,8 @@ function drawplate(preset)
     vid.fill(1,9,60,1, " ")
   end
  end
+ vid.setBackground(0x000000)
+ vid.setForeground(0xFFFFFF)
 end
 
 function drawkeys()
@@ -206,6 +208,8 @@ function drawkeys()
   vid.set(6,27, '║   C   ║   ║   0   ║   ║   E   ║')
   vid.set(6,28, '║       ║   ║       ║   ║       ║')
   vid.set(6,29, '╚═══════╝   ╚═══════╝   ╚═══════╝')
+  vid.setBackground(0x000000)
+  vid.setForeground(0xFF0000)
 end
 
 function drawfinger()
@@ -219,6 +223,8 @@ function drawfinger()
   vid.set(43,21, '║ Compys      ║')
   vid.set(43,22, '║   OCFPS-412 ║')
   vid.set(43,23, '╚═════════════╝')
+   vid.setBackground(0x000000)
+  vid.setForeground(0xFF0000)
 end
 
 function drawpushed(x,y,n)
@@ -229,99 +235,32 @@ function drawpushed(x,y,n)
   vid.set(x,y+2, '║   '..n..'   ║')
   vid.set(x,y+3, '║       ║')
   vid.set(x,y+4, '╚═══════╝')
+  vid.setBackground(0x000000)
+  vid.setForeground(0xFF0000)
 end
 
 function know(setmode)
-  z = {{7,11},{8,11},{9,11},{10,11},{11,11},{12,11},{13,11},
-       {7,12},{8,12},{9,12},{10,12},{11,12},{12,12},{13,12},
-       {7,13},{8,13},{9,13},{10,13},{11,13},{12,13},{13,13}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 6,10,1 end
-  end
-  z = {{19,11},{20,11},{21,11},{22,11},{23,11},{24,11},{25,11},
-       {19,12},{20,12},{21,12},{22,12},{23,12},{24,12},{25,12},
-       {19,13},{20,13},{21,13},{22,13},{23,13},{24,13},{25,13}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 18,10,2 end
-  end
-  z = {{31,11},{32,11},{33,11},{34,11},{35,11},{36,11},{37,11},
-       {31,12},{32,12},{33,12},{34,12},{35,12},{36,12},{37,12},
-       {31,13},{32,13},{33,13},{34,13},{35,13},{36,13},{37,13}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 30,10,3 end
-  end
-  z = {{7,16},{8,16},{9,16},{10,16},{11,16},{12,16},{13,16},
-       {7,17},{8,17},{9,17},{10,17},{11,17},{12,17},{13,17},
-       {7,18},{8,18},{9,18},{10,18},{11,18},{12,18},{13,18}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 6,15,4 end
-  end
-  z = {{19,16},{20,16},{21,16},{22,16},{23,16},{24,16},{25,16},
-       {19,17},{20,17},{21,17},{22,17},{23,17},{24,17},{25,17},
-       {19,18},{20,18},{21,18},{22,18},{23,18},{24,18},{25,18}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 18,15,5 end
-  end
-  z = {{31,16},{32,16},{33,16},{34,16},{35,16},{36,16},{37,16},
-       {31,17},{32,17},{33,17},{34,17},{35,17},{36,17},{37,17},
-       {31,18},{32,18},{33,18},{34,18},{35,18},{36,18},{37,18}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 30,15,6 end
-  end
-  z = {{7,21},{8,21},{9,21},{10,21},{11,21},{12,21},{13,21},
-       {7,22},{8,22},{9,22},{10,22},{11,22},{12,22},{13,22},
-       {7,23},{8,23},{9,23},{10,23},{11,23},{12,23},{13,23}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 6,20,7 end
-  end
-  z = {{19,21},{20,21},{21,21},{22,21},{23,21},{24,21},{25,21},
-       {19,22},{20,22},{21,22},{22,22},{23,22},{24,22},{25,22},
-       {19,23},{20,23},{21,23},{22,23},{23,23},{24,23},{25,23}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 18,20,8 end
-  end
-  z = {{31,21},{32,21},{33,21},{34,21},{35,21},{36,21},{37,21},
-       {31,22},{32,22},{33,22},{34,22},{35,22},{36,22},{37,22},
-       {31,23},{32,23},{33,23},{34,23},{35,23},{36,23},{37,23}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 30,20,9 end
-  end
-  z = {{7,26},{8,26},{9,26},{10,26},{11,26},{12,26},{13,26},
-       {7,27},{8,27},{9,27},{10,27},{11,27},{12,27},{13,27},
-       {7,28},{8,28},{9,28},{10,28},{11,28},{12,28},{13,28}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 6,25,'C' end
-  end
-  z = {{19,26},{20,26},{21,26},{22,26},{23,26},{24,26},{25,26},
-       {19,27},{20,27},{21,27},{22,27},{23,27},{24,27},{25,27},
-       {19,28},{20,28},{21,28},{22,28},{23,28},{24,28},{25,28}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 18,25,0 end
-  end
-  z = {{31,26},{32,26},{33,26},{34,26},{35,26},{36,26},{37,26},
-       {31,27},{32,27},{33,27},{34,27},{35,27},{36,27},{37,27},
-       {31,28},{32,28},{33,28},{34,28},{35,28},{36,28},{37,28}}
-  for _,point in pairs(z) do
-    if tpoint[1] == point[1] and tpoint[2] == point[2] then return 30,25,'E' end
-  end
-  if tpoint[1] == 21 and tpoint[2] == 30 and setmode == false then setup() end
-  if setmode == false then 
-    z = {{44,17},{45,17},{46,17},{47,17},{48,17},{49,17},{50,17},{51,17},{52,17},{53,17},{54,17},{55,17},{56,17},
-        {44,18},{45,18},{46,18},{47,18},{48,18},{49,18},{50,18},{51,18},{52,18},{53,18},{54,18},{55,18},{56,18},
-        {44,19},{45,19},{46,19},{47,19},{48,19},{49,19},{50,19},{51,19},{52,19},{53,19},{54,19},{55,19},{56,19},
-        {44,20},{45,20},{46,20},{47,20},{48,20},{49,20},{50,20},{51,20},{52,20},{53,20},{54,20},{55,20},{56,20},
-        {44,21},{45,21},{46,21},{47,21},{48,21},{49,21},{50,21},{51,21},{52,21},{53,21},{54,21},{55,21},{56,21},
-        {44,22},{45,22},{46,22},{47,22},{48,22},{49,22},{50,22},{51,22},{52,22},{53,22},{54,22},{55,22},{56,22}}
-    for _,point in pairs(z) do
-      if tpoint[1] == point[1] and tpoint[2] == point[2] then
-        fg=1
+  if 5 < tpoint[1] and tpoint[1] < 16 and 9 < tpoint[2] and tpoint[2] < 15 then return 6,10,1
+  elseif 17 < tpoint[1] and tpoint[1] < 27 and 9 < tpoint[2] and tpoint[2] < 15 then return 18,10,2
+  elseif 29 < tpoint[1] and tpoint[1] < 39 and 9 < tpoint[2] and tpoint[2] < 15 then return 30,10,3
+  elseif 5 < tpoint[1] and tpoint[1] < 16 and 14 < tpoint[2] and tpoint[2] < 20 then return 6,15,4
+  elseif 17 < tpoint[1] and tpoint[1] < 27 and 14 < tpoint[2] and tpoint[2] < 20 then return 18,15,5
+  elseif 29 < tpoint[1] and tpoint[1] < 39 and 14 < tpoint[2] and tpoint[2] < 20 then return 30,15,6
+  elseif 5 < tpoint[1] and tpoint[1] < 16 and 19 < tpoint[2] and tpoint[2] < 25 then return 6,20,7
+  elseif 17 < tpoint[1] and tpoint[1] < 27 and 19 < tpoint[2] and tpoint[2] < 25 then return 18,20,8
+  elseif 29 < tpoint[1] and tpoint[1] < 39 and 19 < tpoint[2] and tpoint[2] < 25 then return 30,20,9
+  elseif 5 < tpoint[1] and tpoint[1] < 16 and 24 < tpoint[2] and tpoint[2] < 30 then return 6,25,'C'
+  elseif 17 < tpoint[1] and tpoint[1] < 27 and 24 < tpoint[2] and tpoint[2] < 30 then return 18,25,0
+  elseif 29 < tpoint[1] and tpoint[1] < 39 and 24 < tpoint[2] and tpoint[2] < 30 then return 30,25,'E' 
+  elseif tpoint[1] == 21 and tpoint[2] == 30 and setmode == false then setup() 
+  elseif setmode == false then 
+      if 43 < tpoint[1] and tpoint[1] < 56 and 16 < tpoint[2] and tpoint[2] < 23 then
         finger()
         for _,name in pairs(allowed) do
           if who == name then inpassw = passw fg= nil return 500,500,'E' end
         end
+        inpassw='' return 500,500,'E'
       end
-    end
-    if fg == 1 then fg = 0 inpassw='' return 500,500,'E' end
   end
 end 
 
@@ -330,6 +269,7 @@ function setup()
   vid.setForeground(0xFFFFFF)
   vid.fill(1,1,60,9, " ")
   vid.set(1,1,'SecuCODEX Color Edition v1.09 Setup')
+  vid.setForeground(0xFF0000)
   vid.set(1,2,'Old Password: ')
   apassw = ''
   drawkeys()
@@ -340,8 +280,6 @@ function setup()
     x,y,n = know(true)
     if n ~= nil then
       drawpushed(x,y,n)
-      vid.setBackground(0x000000)
-      vid.setForeground(0xFFFFFF)
       if n== 'C' then apassw='' vid.fill(14, 2, 60, 1, " ") pos =1 sleep(0.1) drawkeys()
       elseif n== 'E' then sleep(0.1) drawkeys() break
       else
@@ -362,6 +300,7 @@ function intap()
   vid.setForeground(0xFFFFFF)
   vid.fill(1,1,60,9, " ")
   vid.set(1,1,'SecuCODEX Color Edition v1.09 Setup')
+  vid.setForeground(0xFF0000)
   vid.set(1,2,'New Password: ')
   passw = ''
   drawkeys()
@@ -372,8 +311,6 @@ function intap()
     x,y,n = know(true)
     if n ~= nil then
       drawpushed(x,y,n)
-      vid.setBackground(0x000000)
-      vid.setForeground(0xFFFFFF)
       if n== 'C' then passw='' vid.fill(14, 2, 60, 1, " ") pos =1 sleep(0.1) drawkeys()
       elseif n== 'E' then sleep(0.1) drawkeys() break
       else
@@ -385,8 +322,6 @@ function intap()
       end
     end
   end
-  vid.setBackground(0x000000)
-  vid.setForeground(0xFFFFFF)
   vid.fill(1,2,60,8, " ")
   vid.set(1,2,'Side for correct code (0-5): ')
   corr = ''
@@ -397,8 +332,6 @@ function intap()
     x,y,n = know(true)
     if n ~= nil then
       drawpushed(x,y,n)
-      vid.setBackground(0x000000)
-      vid.setForeground(0xFFFFFF)
       if n== 'C' then corr='' vid.fill(29, 2, 60, 1, " ") pos =1 sleep(0.1) drawkeys()
       elseif n== 'E' then sleep(0.1) drawkeys() break
       else
@@ -410,8 +343,6 @@ function intap()
       end
     end
   end
-  vid.setBackground(0x000000)
-  vid.setForeground(0xFFFFFF)
   vid.fill(1,2,60,8, " ")
   vid.set(1,2,'Side for incorrect code (0-5): ')
   incorr = ''
@@ -422,8 +353,6 @@ function intap()
     x,y,n = know(true)
     if n ~= nil then
       drawpushed(x,y,n)
-      vid.setBackground(0x000000)
-      vid.setForeground(0xFFFFFF)
       if n== 'C' then incorr='' vid.fill(31, 2, 60, 1, " ") pos =1 sleep(0.1) drawkeys()
       elseif n== 'E' then sleep(0.1) drawkeys() break
       else
@@ -435,8 +364,6 @@ function intap()
       end
     end
   end
-  vid.setBackground(0x000000)
-  vid.setForeground(0xFFFFFF)
   vid.fill(1,2,60,8, " ")
   vid.set(1,2,'Show password? [E/C]: ')
   while true do
@@ -450,8 +377,6 @@ function intap()
       end
     end
   end
-  vid.setBackground(0x000000)
-  vid.setForeground(0xFFFFFF)
   vid.fill(1,2,60,8, " ")
   vid.set(1,2,'Show key push? [E/C]: ')
   while true do
@@ -577,7 +502,7 @@ while true do
     drawplate('rd')
     red.setOutput(tonumber(incorr), 15)
   end
-  sleep(1.5)
+  sleep(1)
   drawplate('wh')
   red.setOutput(tonumber(corr), 0)
   red.setOutput(tonumber(incorr), 0)
