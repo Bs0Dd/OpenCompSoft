@@ -13,12 +13,12 @@ Requirements to computer system:
  - Tier 1 Video Card
  - Tier 2 Monitor (Tier 1 don't have touchscreen)
  - Tier 1 Processor
- - Tier 1 Hard Drive
+ - Tier 1 Hard Drive or Floppy Disk
  - 1x Tier 1 Memory
  - Tier 1 Redstone Card or Redstone I/O block
  
 Installing:
- 1. Download this file as init.lua to hard drive in access computer system (pastebin get  init.lua)
+ 1. Download this file as init.lua to hard drive or floppy disk in access computer system (pastebin get ahbjHpvV init.lua)
  2. Boot from drive by Lua BIOS
  3. Make first Setup
  4. Enjoy))

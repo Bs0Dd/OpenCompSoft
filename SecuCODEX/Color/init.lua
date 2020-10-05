@@ -20,7 +20,7 @@ Minimal requirements to computer system:
 Install Tier 3 Computer, Video Card and Monitor to set 256 color mode in program
 
 Installing:
- 1. Download this file as init.lua to hard drive in access computer system (pastebin get  init.lua)
+ 1. Download this file as init.lua to hard drive or floppy disk in access computer system (pastebin get jJWDicaJ init.lua)
  2. Boot from drive by Lua BIOS
  3. Make first Setup
  4. Enjoy))
