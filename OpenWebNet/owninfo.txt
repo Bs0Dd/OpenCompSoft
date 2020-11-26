@@ -1,0 +1,33 @@
+--OpenOS OpenWebNet protocol tools and info--
+
+  ~ NFP - Network Formatted Page (v0.3)
+  Site content example:
+  { {0, 21, 5, 0xFFFF00, 0x000000, "Static visible string at x=21, y=5"}, 
+    {1, 15, 28, 0xFFFFFF, 0x000000, "Go to OpenWebNet page", "own://openwebnet.com"},
+    {2, 15, 28, 0xFF00FF, 0x000000, "Username:", 4},
+    {3, "mem[3] = mem[1]+mem[2]"} }
+  1 - Content type
+  	0 - visible string
+  	1 - hypertext reference (developing)
+  	2 - input form (developing)
+  	3 - SimpleLua command (developing)
+  2 - 0-2 - X coordinate
+      3 - executing command
+  3 - 0-2 - Y coordinate
+  4 - 0-2 - Foreground color in RGB HEX
+  5 - 0-2 - Background color in RGB HEX
+  6 - 0-2 - String value
+  7 - 1 - reference address
+      2 - save value to mem[x]
+      
+  ~ DDBServer - Domens DataBase Server
+  Contains info about server's modem addresses for site domens.
+  Example:
+ { ["openwebnet.com"] = "0bb58cfe-9661-4e47-b1f0-be2262f97b33", 
+   ["webcolortest.net"] = "704b3247-ff87-45e8-9ae8-e3f854fd7cc9",
+   ["compyssoft.net"] = "b0b389cd-7929-4003-9b39-f1b83ee0adf1" }
+  Commands:
+  GADL - Getting domens modem address list from server
+         Return: serialized table
+
+  
