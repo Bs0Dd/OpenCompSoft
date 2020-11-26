@@ -36,15 +36,14 @@ function remdfs.connect(port, hostname, login, passw)
   opp,_,err = gmesg('RDAN')
   if err ~= nil then return nil,err end
   card.send(opp, port, 'RDLG', login, passw)
-  _, data, err = gmesg('RDAU')
-  if err ~= nil then return nil,err end
+  _, data, dadr = gmesg('RDAU')
   if data == 'FAIL' then return nil,"Authorization failed"
   elseif data == 'OK' then
     local proxyObj = {}
     proxyObj.port = port
     proxyObj.opponent = opp
     proxyObj.type = "filesystem"
-    proxyObj.address = opp:gsub("-","") .. "-rfs"
+    proxyObj.address = dadr:gsub("-","") .. "-rfs"
     local opponent = opp
     
     proxyObj.isDirectory = function(path)
@@ -109,7 +108,10 @@ function remdfs.connect(port, hostname, login, passw)
 		readed = 0
 		rdata = ''
 		while readed < count do
-		_, reciv, err = gmesg('RDREADA')
+		while true do
+		  ropp, reciv, err = gmesg('RDREADA')
+		  if ropp == opp then break end
+		end
 		if err ~= nil then return nil, err end
 		if reciv ~= nil then rdata = rdata..reciv end
 		readed = readed + 8000

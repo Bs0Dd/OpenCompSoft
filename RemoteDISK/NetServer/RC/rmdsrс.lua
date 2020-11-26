@@ -1,16 +1,18 @@
---[[ RemoteDISK NetServer v1.03.
-Server program for make NetClient Network disks. Client connecting by port, hostname, login and password
+--[[ RemoteDISK NetServer RC Daemon v1.03.
+Server program for make NetClient Network disks. Client connecting by port, hostname, login and password. For working with RC
 Uses settings from "/etc/rmdsrv.cfg"
 Author: Bs()Dd
 ]]
 local component = require("component")
 local computer = require("computer")
 local fs = require("filesystem")
+local io = require("io")
 local event = require("event")
-local shell = require("shell")
-local seriz = require("serialization")
 
-local args, options = shell.parse(...)
+local work = true
+
+function start(slot)
+if work then
 
 online = {}
 
@@ -26,42 +28,27 @@ local function isOnline(adrr)
   return false
 end
 
-print('RemoteDISK NetServer v1.03')
+print('RemoteDISK NetServer RC Daemon v1.03')
 
-if not fs.exists('/etc/rmdsrv.cfg') then
-  cfg =io.open('/etc/rmdsrv.cfg', "w")
-  cfg:write([[{
+if args == nil then
+  args = ([[{
+  ['firstcfg'] = {
   port = ,
   hostname= "",
   login= "",
   password= "",
   hddaddress= ""
+  }
 }]])
-  cfg:close()
-  print('NO SETTINGS FOUND! Please, go to "/etc/rmdsrv.cfg" and fill it.')
+  print('NO SETTINGS FOUND! Please, go to "/etc/rc.cfg" and fill it.')
   computer.beep()
   computer.beep()
   os.exit()
 else
-  cfg =io.open('/etc/rmdsrv.cfg', "r")
-  xsd = cfg:read(512)
-  if xsd== nil or xsd== '' then 
-    cfg =io.open('/etc/rmdsrv.cfg', "w")
-    cfg:write([[{
-  port = ,
-  hostname= "",
-  login= "",
-  password= "",
-  hddaddress= ""
-}]])
-    cfg:close()
-    print('NO SETTINGS FOUND! Please, go to "/etc/rmdsrv.cfg" and fill it.')
-    computer.beep()
-    computer.beep()
-    os.exit()
+  tsets = args[slot]
+  if tsets == nil then 
+    print('NO CFG FOUND! Please, enter correct config name or create it in "/etc/rc.cfg".')
   end
-  tsets = seriz.unserialize(xsd)
-  rfs = component.proxy(tsets.hddaddress)
   port = tsets.port
 end
 
@@ -223,5 +210,9 @@ while true do
   end
   
 end
+end
+end
 
-
+function stop()
+  work = false
+end
