@@ -1,14 +1,19 @@
 --OpenOS OpenWebNet protocol tools and info--
 
-  ~ NFP - Network Formatted Page (v0.3)
+  ~ NFP - Network Formatted Page (v0.3c)
   Site content example:
-  { {0, 21, 5, 0xFFFF00, 0x000000, "Static visible string at x=21, y=5"}, 
-    {1, 15, 28, 0xFFFFFF, 0x000000, "Go to OpenWebNet page", "own://openwebnet.com"},
-    {2, 15, 28, 0xFF00FF, 0x000000, "Username:", 4},
-    {3, "mem[3] = mem[1]+mem[2]"} }
+  { ['label']= 'Welcome to Memphisto',
+    {0, 21, 5, 0xFFFF00, 0x000000, "Static visible string at x=21, y=5"}, 
+    {1, 15, 28, false, 0xFFFFFF, 0x000000, "Go to OpenWebNet page", "openwebnet.com"},
+    {2, 11, 8, false, 0xFFFFFF, 0x000000, "Download OCIF image", "rupertgallery.uk/pics/bliss.pic"},
+    {3, 17, 40, false, "wonshelter.su/logo.pic"},
+    {4, 1, 1, 0xFF00FF, 0x000000, "Username:", 4},
+    {5, "mem[3] = mem[1]+mem[2]"} }
+    
+  ['label'] - Site label, prints near address
   1 - Content type
   	0 - visible string
-  	1 - hypertext reference (developing)
+  	1 - hyperlink reference
   	2 - input form (developing)
   	3 - SimpleLua command (developing)
   2 - 0-2 - X coordinate
@@ -26,8 +31,9 @@
  { ["openwebnet.com"] = "0bb58cfe-9661-4e47-b1f0-be2262f97b33", 
    ["webcolortest.net"] = "704b3247-ff87-45e8-9ae8-e3f854fd7cc9",
    ["compyssoft.net"] = "b0b389cd-7929-4003-9b39-f1b83ee0adf1" }
+   
   Commands:
   GADL - Getting domens modem address list from server
          Return: serialized table
-
-  
+         
+         { 0, 19, 4, 0xFF0000, 0xFFFFFF, "M" }, { 0, 20, 4, 0xFF6D00, 0xFFFFFF, "E" }, { 0, 21, 4, 0xFFB600, 0xFFFFFF, "M" }, { 0, 22, 4, 0x00FF00, 0xFFFFFF, "P" }, { 0, 23, 4, 0x00FFFF, 0xFFFFFF, "H" }, { 0, 24, 4, 0x0000FF, 0xFFFFFF, "I" }, { 0, 25, 4, 0xFF00FF, 0xFFFFFF, "S" }, { 0, 26, 4, 0xFF0000, 0xFFFFFF, "T" }, { 0, 27, 4, 0xFF6D00, 0xFFFFFF, "O" }

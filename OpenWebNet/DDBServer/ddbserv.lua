@@ -14,23 +14,30 @@ function start()
 		if component.list("modem")() == nil then io.stderr:write("No Network Card is detected.") return end
 		card = component.proxy(component.list("modem")())
 		work = true
-		print("OWP Domens DataBase Server v0.2")
+		print("OWN Domens DataBase Server v0.2")
 		card.open(3707)
 		local totl = 0
 		for k,v in pairs(args) do
   			totl = totl + 1
   		end
 		if totl == 0 then
-			print("FATAL ERROR! No entries found!")
+			io.stderr:write("FATAL ERROR! No entries found!")
 			return
 		else
 			print("Initialization OK. Found "..totl.." entries") end
 		local work = true
 		event.listen("modem_message", request)
+	else
+		io.stderr:write("Server already started!")
 	end
 end
 
 function stop()
-	local work = nil
-	event.ignore("modem_message", request) 
+	if work == true then
+		work = nil
+		print("Server stopped.")
+		event.ignore("modem_message", request)
+	else
+		io.stderr:write("Server isn't working now!")
+	end
 end
