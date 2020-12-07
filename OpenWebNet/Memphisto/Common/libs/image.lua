@@ -1,4 +1,4 @@
-require("advancedLua")
+
 local computer = require("computer")
 local color = require("color")
 local unicode = require("unicode")
@@ -185,15 +185,12 @@ function image.fromString(pictureString)
 		tonumber("0x" .. unicode.sub(pictureString, 3, 4)),
 		{}, {}, {}, {}
 	}
+
 	for i = 5, unicode.len(pictureString), 7 do
 		table.insert(picture[3], color.to24Bit(tonumber("0x" .. unicode.sub(pictureString, i, i + 1))))
 		table.insert(picture[4], color.to24Bit(tonumber("0x" .. unicode.sub(pictureString, i + 2, i + 3))))
 		table.insert(picture[5], tonumber("0x" .. unicode.sub(pictureString, i + 4, i + 5)) / 255)
 		table.insert(picture[6], unicode.sub(pictureString, i + 6, i + 6))
-		
-		if i % 603 == 0 then
-			computer.pullSignal(0)
-		end
 	end
 
 	return picture
