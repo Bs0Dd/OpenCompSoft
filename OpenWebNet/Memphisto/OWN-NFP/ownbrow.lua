@@ -50,7 +50,7 @@ local color = require("color")
 
 local function prac()
 	print("Press any key to continue.")
-	ev.pull("key_up")
+	ev.pull("key_down")
 end
 
 local function split(inp, sep)
@@ -244,11 +244,11 @@ end
 local function setline()
 	tty.clear()
 	drawplate(padd, line, lfil, lab)
-	if component.list("modem")() == nil then 
-	print("No Network Card is detected.\nYou can't use ON-LINE mode!") prac() return end
-	card = component.proxy(component.list("modem")())
-	card.open(3707)
 	if line == false then
+		if component.list("modem")() == nil then 
+		print("No Network Card is detected.\nYou can't use ON-LINE mode!") prac() return end
+		card = component.proxy(component.list("modem")())
+		card.open(3707)
 		if conf["DDBS_uselocal"] == true then
 			f, res = io.open(conf["DDBS_local"])
 			if f == nil then
@@ -598,6 +598,7 @@ while true do
 		rawpage:close()
 		tty.clear()
 		globalnil()
+		if line == true then card.close(3707) end
 		print("Thanks for using Memphisto!\n")
 		os.exit()
 	elseif eve == "scroll" then
