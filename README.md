@@ -5,6 +5,9 @@ Some Lua software for OpenComputers
 * `CopyTape` - Utility for copying Computronics tapes in real time (with two tape drives)
    
    Get : `pastebin get A3ki3HGg copytape.lua`
+* `OpenWebNet` - In-world network protocol for web pages and content sharing
+
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
 * `RemoteDISK` - Network Disk server (standart and RC daemon) and client with Driver library, Netdisk working as real component in client PC
 
    Get : `too bugged for pastebin, use wget`
