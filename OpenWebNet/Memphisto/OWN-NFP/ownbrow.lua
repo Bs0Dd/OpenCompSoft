@@ -23,6 +23,8 @@ local function globalnil()
 	page = nil
 	rx = nil
 	ry = nil
+	why = nil
+	hoh = nil
 end
 
 line = false
@@ -37,6 +39,7 @@ conf = {}
 page = {}
 rx = 0
 ry = 0
+hoh = true
 	
 print("Memphisto OWN-NFP v".._VER_)
 print("Developing © 2020 Compys S&N Systems")
@@ -68,6 +71,33 @@ local function restore(table)
         end
         return res:sub(0, -2)
 end
+
+local function goerr(mode)
+	local opn
+	if mode == 0 then
+		opn = "/usr/misc/Memphisto/incorrect.nfp"
+	elseif mode == 1 then
+		opn = "/usr/misc/Memphisto/noserver.nfp"
+	elseif mode == 2 then
+		opn = "/usr/misc/Memphisto/noanswer.nfp"
+	elseif mode == 3 then
+		opn = "/usr/misc/Memphisto/404.nfp"
+	end
+	local rawpage, why = io.open(opn)
+	if rawpage == nil then
+		tty.clear()
+		globalnil()
+		print("FATAL ERROR! Can't open system page file: "..why) os.exit() end
+	page, why = seriz.unserialize(rawpage:read())
+	if page == nil then
+		tty.clear()
+		globalnil()
+		print("FATAL ERROR! Can't handle system page file: "..why) os.exit() end
+	lab = page['label']
+	rx = 0
+	ry = 0
+	rawpage:close()
+end 
 
 local function drawocif(kx, ky, ptox, locl)
 	if padd ~= lpadd then ocifs = {} lpadd = padd end
@@ -127,11 +157,15 @@ local function drawocif(kx, ky, ptox, locl)
 			piclib.draw(kx,ky,ocifs[ptox])
 			return
 		end
-		pic = piclib.load(ptox)
-		if pic == nil then
+		pic, why = piclib.load(ptox)
+		if pic == false then
 			vid.setBackground(conf.std_backg)
 			vid.setForeground(0xFF0000)
-			vid.set(kx, ky, "ERROR: Incorrect picture")
+			if why ~= nil then
+				vid.set(kx, ky, "ERROR: Can't load picture: "..why)
+			else
+				vid.set(kx, ky, "ERROR: Can't load picture: unknown reason")
+			end
 			return
 		end
 		if ocifs[ptox] == nil then ocifs[ptox] = pic end
@@ -218,10 +252,10 @@ local function setline()
 		if conf["DDBS_uselocal"] == true then
 			f, res = io.open(conf["DDBS_local"])
 			if f == nil then
-				print("FATAL ERROR! Can't open local DDBServer file!") prac() return end
+				print("CRITICAL ERROR! Can't open local DDBServer file!") prac() return end
 			servs = seriz.unserialize(f:read())
 			if servs == nil then
-				print("FATAL ERROR! Can't handle local DDBServer file!") prac() return end
+				print("CRITICAL ERROR! Can't handle local DDBServer file!") prac() return end
 			line = true
 				print("OK! Now you are ON-LINE") drawplate(padd, line, lfil, lab) os.sleep(1,5)	
 		else
@@ -229,11 +263,11 @@ local function setline()
 			card.send(conf["DDBS_serv"], 3707, 'GADL')
 			_, _, _, _, _, message = ev.pull(5, "modem_message")
 			if message == nil then
-				print("FATAL ERROR! No answer from server!") prac()
+				print("CRITICAL ERROR! No answer from server!") prac()
 			else
 				servs = seriz.unserialize(message)
 				if servs == nil then
-					print("FATAL ERROR! Can't handle remote DDBServer file!") prac() return end
+					print("CRITICAL ERROR! Can't handle remote DDBServer file!") prac() return end
 				line = true
 				print("OK! Now you are ON-LINE") drawplate(padd, line, lfil, lab) os.sleep(1,5)
 			end
@@ -253,6 +287,9 @@ local function openpage(inp, loca)
 		parts[1]= parts2[1]
 		inp = restore(parts)
 	end
+	rx = 0
+	ry = 0
+	hoh = false
 	lfil = true
 	vid.setBackground(0x000000)
   	vid.setForeground(0xFFFFFF)
@@ -264,11 +301,7 @@ local function openpage(inp, loca)
 		parts = split(inp, "/")
 		opp = servs[parts[1]:lower()]
 		if opp == nil then
-			padd = "/usr/misc/Memphisto/noserver.nfp"
-			local rawpage = io.open(padd)
-			page = seriz.unserialize(rawpage:read())
-			lab = page['label']
-			rawpage:close()
+			goerr(1)
 			return
 		end
 		print("Server address found in DB, connecting...")
@@ -277,11 +310,7 @@ local function openpage(inp, loca)
 		card.send(opp, 3707, "GPG", ratd)
 		_, _, _, _, _, mess, mess2 = ev.pull(5, "modem_message")
 		if mess == nil then
-			padd = "/usr/misc/Memphisto/noanswer.nfp"
-			local rawpage = io.open(padd)
-			page = seriz.unserialize(rawpage:read())
-			lab = page['label']
-			rawpage:close()
+			goerr(2)
 			return
 		elseif mess == 'FOK' then
 			print("Connected, getting page...")
@@ -294,11 +323,7 @@ local function openpage(inp, loca)
 			end
 			page = seriz.unserialize(rpage)
 			if page == nil then
-				padd = "/usr/misc/Memphisto/incorrect.nfp"
-				local rawpage = io.open(padd)
-				page = seriz.unserialize(rawpage:read())
-				lab = page['label']
-				rawpage:close()
+				goerr(0)
 				return
 			end
 		elseif mess == 'iFOK' then
@@ -313,19 +338,11 @@ local function openpage(inp, loca)
 			end
 			page = seriz.unserialize(rpage)
 			if page == nil then
-				padd = "/usr/misc/Memphisto/incorrect.nfp"
-				local rawpage = io.open(padd)
-				page = seriz.unserialize(rawpage:read())
-				lab = page['label']
-				rawpage:close()
+				goerr(0)
 				return 
 			end
 		elseif mess == '404' then
-			padd = "/usr/misc/Memphisto/404.nfp"
-			local rawpage = io.open(padd)
-			page = seriz.unserialize(rawpage:read())
-			lab = page['label']
-			rawpage:close()
+			goerr(3)
 			return end
 		if page['label'] ~= nil then lab = page['label'] else lab = '' end
 		lfil = false
@@ -334,24 +351,17 @@ local function openpage(inp, loca)
 		padd = inp
 		rawpage = io.open(inp)
 		if rawpage == nil then
-			padd = "/usr/misc/Memphisto/404.nfp"
-			local rawpage = io.open(padd)
-			page = seriz.unserialize(rawpage:read())
-			lab = page['label']
-			rawpage:close()
+			goerr(3)
 			return
 		end
 		page = seriz.unserialize(rawpage:read())
 		if page == nil then
-			padd = "/usr/misc/Memphisto/incorrect.nfp"
-			local rawpage = io.open(padd)
-			page = seriz.unserialize(rawpage:read())
-			lab = page['label']
-			rawpage:close()
+			goerr(0)
 			return
 		end
 		if page['label'] ~= nil then lab = page['label'] else lab = '' end
-		lfil = false
+		lfil = fals
+		rawpage:close()
 		return
 	end
 end
@@ -392,23 +402,49 @@ end
 
 local function gohome()
 	padd = conf["homepage"]
-	local rawpage = io.open(padd)
-	page = seriz.unserialize(rawpage:read())
+	local rawpage, why = io.open(padd)
+	if rawpage == nil then
+		tty.clear()
+		globalnil()
+		print("FATAL ERROR! Can't open homepage file: "..why) os.exit() end
+	page, why = seriz.unserialize(rawpage:read())
+	if page == nil then
+		tty.clear()
+		globalnil()
+		print("FATAL ERROR! Can't handle homepage file: "..why) os.exit() end
 	if page['label'] ~= nil then lab = page['label'] else lab = '' end
 	lfil = true
+	rawpage:close()
+	rx = 0
+	ry = 0
+	hoh = true
 end
 
 local function helpmepls()
 	padd = '/usr/misc/Memphisto/help.nfp'
-	local rawpage = io.open(padd)
-	page = seriz.unserialize(rawpage:read())
+	local rawpage, why = io.open(padd)
+	if rawpage == nil then
+		tty.clear()
+		globalnil()
+		print("FATAL ERROR! Can't open system page file: "..why) os.exit() end
+	page, why = seriz.unserialize(rawpage:read())
+	if page == nil then
+		tty.clear()
+		globalnil()
+		print("FATAL ERROR! Can't handle system page file: "..why) os.exit() end
 	if page['label'] ~= nil then lab = page['label'] else lab = '' end
 	lfil = true
+	rawpage:close()
+	rx = 0
+	ry = 0
+	hoh = true
 end
 
 local function reload()
+	rx = 0
+	ry = 0
 	ocifs = {}
-	if lfil == true then openpage(padd, true) lfil = true
+	if hoh == true then openpage(padd, true) hoh = true
 	else openpage(padd, loca) end
 end
 
@@ -523,20 +559,20 @@ local function offpic()
 end
 
 
-local rawconf = io.open("/etc/webbrow.cfg")
+local rawconf, why = io.open("/etc/webbrow.cfg")
 if rawconf == nil then
-	print("FATAL ERROR! Can't open config file!") return end
-conf = seriz.unserialize(rawconf:read())
+	print("FATAL ERROR! Can't open config file: "..why) return end
+conf, why = seriz.unserialize(rawconf:read())
 rawconf:close()
 if conf == nil then
-	print("FATAL ERROR! Can't handle config file!") return end
+	print("FATAL ERROR! Can't handle config file: "..why) return end
 padd = conf["homepage"]
-local rawpage = io.open(conf["homepage"])
+local rawpage, why = io.open(conf["homepage"])
 if rawpage == nil then
-	print("FATAL ERROR! Can't open homepage file!") return end
-page = seriz.unserialize(rawpage:read())
+	print("FATAL ERROR! Can't open homepage file: "..why) return end
+page, why = seriz.unserialize(rawpage:read())
 if page == nil then
-	print("FATAL ERROR! Can't handle homepage file!") return end
+	print("FATAL ERROR! Can't handle homepage file: "..why) return end
 if page['label'] ~= nil then lab = page['label'] else lab = '' end
 rawpage:close()
 
@@ -562,6 +598,7 @@ while true do
 		rawpage:close()
 		tty.clear()
 		globalnil()
+		print("Thanks for using Memphisto!\n")
 		os.exit()
 	elseif eve == "scroll" then
 		if sc == 1 then ry= ry+1
