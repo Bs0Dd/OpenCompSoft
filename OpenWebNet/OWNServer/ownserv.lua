@@ -116,6 +116,7 @@ function stop()
 		work = nil
 		print("Server stopped.")
 		event.ignore("modem_message", request)
+		card.close(3707)
 	else
 		io.stderr:write("Server isn't working now!")
 	end
