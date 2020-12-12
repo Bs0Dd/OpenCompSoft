@@ -288,7 +288,7 @@ function start()
             io.stderr:write("FATAL ERROR! Hard drive insn't exists!")
             return
         else
-            print("Hard drive " .. rfs.address .. " selected")
+            print("Hard drive " .. rfs.address .. " is selected")
             print('Server "' .. args.hostname .. '", port ' .. port)
         end
         if args.mode == 1 then
