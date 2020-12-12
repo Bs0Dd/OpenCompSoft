@@ -1,12 +1,12 @@
 # Creating in-world Website with OpenWebNet protocol
-1. Setting up OVNServer
-    * Get server from Pastebin by `pastebin run `
+1. Setting up OWNServer
+    * Get server from Pastebin by `pastebin run MFi0eAzH`
     * In `/etc/rc.cfg` set server variable with website directory. Example: `ownserv = "/mnt/c83/srvdir"`
     * Run server by `rc ownserv start`
     * Server stops by `rc ownserv stop`
     
 2. Setting up Memphisto browser
-    * Get browser from Pastebin by `pastebin run `
+    * Get browser from Pastebin by `pastebin run rVvALG19`
     * Go to `/etc/webbrow.cfg`. There you can set:
         * `["homepage"] = "/usr/misc/Memphisto/home.nfp"`  
           Variable with path to homepage file 
@@ -24,7 +24,7 @@
           Path to local domens file
     1. If you wants to use global in-world domens list (DDBServer)
         * Set`["DDBS_uselocal"]` variable to `false`  
-        * Get server from Pastebin by `pastebin run `
+        * Get server from Pastebin by `pastebin run 3iR9DDpa`
         * In `/etc/rc.cfg` set server variable with table of domens and his server's modem addresses.  
           Example: `ddbserv = {["openwebnet.com"] = "a77b72c8-5f98-474f-8d92-d6e832c8e582", ...}`
         * Run server by `rc ddbserv start`
