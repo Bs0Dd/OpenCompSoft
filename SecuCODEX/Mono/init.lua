@@ -49,62 +49,8 @@ function sleep(timeout)
   checkArg(1, timeout, "number", "nil")
   local deadline = computer.uptime() + (timeout or 0)
   repeat
-    pull(deadline - computer.uptime())
+    computer.pullSignal(deadline - computer.uptime())
   until computer.uptime() >= deadline
-end
-
-function pull(...)
-  local args = table.pack(...)
-  if type(args[1]) == "string" then
-    return pullFiltered(createPlainFilter(...))
-  else
-    checkArg(1, args[1], "number", "nil")
-    checkArg(2, args[2], "string", "nil")
-    return pullFiltered(args[1], createPlainFilter(select(2, ...)))
-  end
-end
-
-function pullFiltered(...)
-  local args = table.pack(...)
-  local seconds, filter = math.huge
-
-  if type(args[1]) == "function" then
-    filter = args[1]
-  else
-    checkArg(1, args[1], "number", "nil")
-    checkArg(2, args[2], "function", "nil")
-    seconds = args[1]
-    filter = args[2]
-  end
-
-  repeat
-    local signal = table.pack(computer.pullSignal(seconds))
-    if signal.n > 0 then
-      if not (seconds or filter) or filter == nil or filter(table.unpack(signal, 1, signal.n)) then
-        return table.unpack(signal, 1, signal.n)
-      end
-    end
-  until signal.n == 0
-end
-
-function createPlainFilter(name, ...)
-  local filter = table.pack(...)
-  if name == nil and filter.n == 0 then
-    return nil
-  end
-
-  return function(...)
-    local signal = table.pack(...)
-    if name and not (type(signal[1]) == "string" and signal[1]:match(name)) then
-      return false
-    end
-    for i = 1, filter.n do
-      if filter[i] ~= nil and filter[i] ~= signal[i + 1] then
-        return false
-      end
-    end
-    return true
-  end
 end
 
 function drawplate(preset)
@@ -200,7 +146,7 @@ function setup()
   drawkeys()
   pos = 1
   while true do
-    _,_,tx,ty,_,who = pull('touch')
+    _,_,tx,ty,_,who = computer.pullSignal('touch')
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -230,7 +176,7 @@ function intap()
   drawkeys()
   pos = 1
   while true do
-    _,_,tx,ty,_,who = pull('touch')
+    _,_,tx,ty,_,who = computer.pullSignal('touch')
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -251,7 +197,7 @@ function intap()
   corr = ''
   pos = 1
   while true do
-    _,_,tx,ty,_,who = pull('touch')
+    _,_,tx,ty,_,who = computer.pullSignal('touch')
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -272,7 +218,7 @@ function intap()
   incorr = ''
   pos = 1
   while true do
-    _,_,tx,ty,_,who = pull('touch')
+    _,_,tx,ty,_,who = computer.pullSignal('touch')
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -291,7 +237,7 @@ function intap()
   vid.fill(1,2,60,5, " ")
   vid.set(1,2,'Show password? [E/C]: ')
   while true do
-    _,_,tx,ty,_,who = pull('touch')
+    _,_,tx,ty,_,who = computer.pullSignal('touch')
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -304,7 +250,7 @@ function intap()
   vid.fill(1,2,60,5, " ")
   vid.set(1,2,'Show key push? [E/C]: ')
   while true do
-    _,_,tx,ty,_,who = pull('touch')
+    _,_,tx,ty,_,who = computer.pullSignal('touch')
     tpoint = {tx,ty}
     x,y,n = know()
     if n ~= nil then
@@ -389,7 +335,7 @@ while true do
   pos = 1
   prept = 21
   while true do
-    _,_,tx,ty,_,who = pull('touch')
+    _,_,tx,ty,_,who = computer.pullSignal('touch')
     tpoint = {tx,ty}
     x,y,n = know(false)
     if n ~= nil then
