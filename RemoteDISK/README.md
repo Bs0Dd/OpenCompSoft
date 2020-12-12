@@ -1,6 +1,6 @@
 # Creating RemoteDISK network
 1. Configuring NetServer
-    * Get server from Pastebin by `pastebin get  /etc/rc.d/rmdsrv.lua` 
+    * Get server from Pastebin by `pastebin get 8yTQdACn /etc/rc.d/rmdsrv.lua` 
     * In `/etc/rc.cfg` set server variable with website directory. Example: 
     [rc.cfg](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/Examples/rc.cfg)
     * Run server by `rc rmdsrv start`  
@@ -17,7 +17,7 @@
             
       This limitation is due to the inability to open more than 16 files by the system (2 of them are reserved for the needs of the system and the server)
 2. Configuring NetClient
-      * Get utilities from Pastebin by `pastebin run `
+      * Get utilities from Pastebin by `pastebin run CnJP04yJ`
       * Сonnection to the server is carried out by the command: `rmdmt <port> <hostname> <login> <password>`  
       If you needs to connect to multiple servers, you can write a simple script file for the utility. Example: 
       [connect.cfg](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/Examples/connect.cfg)  
