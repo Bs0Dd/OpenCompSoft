@@ -28,6 +28,8 @@ function request(_, _, opp, _, _, call, one, two, thr, four)
                             "[" .. os.date("%T") .. "] " .. "[LOGIN]: " .. opp .. " tried to login to full server\n"
                         )
                     end
+                    logfil:close()
+                    event.listen("modem_message", request)
                     return
                 end
                 card.send(opp, port, "RDAU", "OK", rfs.address)
