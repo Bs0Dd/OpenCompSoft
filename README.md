@@ -10,7 +10,7 @@ Some Lua software for OpenComputers
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
 * `RemoteDISK` - Network Disk server (standart and RC daemon) and client with Driver library, Netdisk working as real component in client PC
 
-   Get : `too bugged for pastebin, use wget`
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/README.md)
 * `SecuCODEX` - Code Door system with fingerprint scanner, working without OpenOS
    
    Get Color Edition (FOR TIER 2 or 3 VIDEO) : `pastebin get jJWDicaJ init.lua`
