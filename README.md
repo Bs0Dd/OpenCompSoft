@@ -8,7 +8,7 @@ Some Lua software for OpenComputers
 * `OpenWebNet` - In-world network protocol for web pages and content sharing
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
-* `RemoteDISK` - Network Disk server (standart and RC daemon) and client with Driver library, Netdisk working as real component in client PC
+* `RemoteDISK` - Network Disk server (RC daemon) and client with Driver library
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/README.md)
 * `SecuCODEX` - Code Door system with fingerprint scanner, working without OpenOS
