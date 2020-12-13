@@ -47,6 +47,14 @@ function untable(table)
   return res
 end
 
+function toucheve()
+  while true do
+    eve,w,tx,ty,z,who = computer.pullSignal()
+    if eve == 'touch' then break end
+  end
+  return eve,w,tx,ty,z,who
+end
+
 function sleep(timeout)
   checkArg(1, timeout, "number", "nil")
   local deadline = computer.uptime() + (timeout or 0)
@@ -221,7 +229,7 @@ function setup()
   drawkeys()
   pos = 1
   while true do
-    _,_,tx,ty,_,who = computer.pullSignal('touch')
+    _,_,tx,ty,_,who = toucheve()
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -252,7 +260,7 @@ function intap()
   drawkeys()
   pos = 1
   while true do
-    _,_,tx,ty,_,who = computer.pullSignal('touch')
+    _,_,tx,ty,_,who = toucheve()
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -273,7 +281,7 @@ function intap()
   corr = ''
   pos = 1
   while true do
-    _,_,tx,ty,_,who = computer.pullSignal('touch')
+    _,_,tx,ty,_,who = toucheve()
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -294,7 +302,7 @@ function intap()
   incorr = ''
   pos = 1
   while true do
-    _,_,tx,ty,_,who = computer.pullSignal('touch')
+    _,_,tx,ty,_,who = toucheve()
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -313,7 +321,7 @@ function intap()
   vid.fill(1,2,60,8, " ")
   vid.set(1,2,'Show password? [E/C]: ')
   while true do
-    _,_,tx,ty,_,who = computer.pullSignal('touch')
+    _,_,tx,ty,_,who = toucheve()
     tpoint = {tx,ty}
     x,y,n = know(true)
     if n ~= nil then
@@ -326,7 +334,7 @@ function intap()
   vid.fill(1,2,60,8, " ")
   vid.set(1,2,'Show key push? [E/C]: ')
   while true do
-    _,_,tx,ty,_,who = computer.pullSignal('touch')
+    _,_,tx,ty,_,who = toucheve()
     tpoint = {tx,ty}
     x,y,n = know()
     if n ~= nil then
@@ -412,7 +420,7 @@ while true do
   pos = 1
   prept = 31
   while true do
-    _,_,tx,ty,_,who = computer.pullSignal('touch')
+    _,_,tx,ty,_,who = toucheve()
     tpoint = {tx,ty}
     x,y,n = know(false)
     if n ~= nil then
