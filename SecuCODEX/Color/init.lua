@@ -245,10 +245,10 @@ function setup()
       end
     end
   end
-  if apassw == passw then intap() else drawplate('wh') end
+  if apassw == passw then intap(true) else drawplate('wh') end
 end
 
-function intap()
+function intap(setp)
   f=hdd.open('/configs/sets.cfg',"w")
   vid.setBackground(0x000000)
   vid.setForeground(0xFFFFFF)
@@ -341,6 +341,21 @@ function intap()
       drawpushed(x,y,n)
       if n== 'C' then kpush = 'false'  sleep(0.1) drawkeys() break
       elseif n== 'E' then kpush = 'true' sleep(0.1) drawkeys() break 
+      end
+    end
+  end
+  if setp then
+    vid.fill(1,2,60,8, " ")
+    vid.set(1,2,'Clear fingerprints database? [E/C]: ')
+    while true do
+      _,_,tx,ty,_,who = toucheve()
+      tpoint = {tx,ty}
+      x,y,n = know()
+      if n ~= nil then
+        drawpushed(x,y,n)
+        if n== 'C' then sleep(0.1) drawkeys() break
+        elseif n== 'E' then m=hdd.open('/configs/fingers.cfg', "w") hdd.close(m) sleep(0.1) drawkeys() break 
+        end
       end
     end
   end
