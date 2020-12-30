@@ -65,17 +65,12 @@ function drawplate(preset)
   vid.setBackground(1)
   vid.fill(1,1,60,5, " ")
   vid.setForeground(0)
+  vid.set(8,1,'SecuCODEX Code Door System')
   if preset == 'gr' then
-    vid.set(8,1,'SecuCODEX Code Door System')
     npos = (40-10-#who)/2
     if (40-10-#who)%2 ~= 0 then npos = npos + 1 end
     vid.set(math.floor(npos)+1,3,'Welcome, '..who..'!')
-  end
-  if preset == 'wh' then
-    vid.set(8,1,'SecuCODEX Code Door System')
-  end
-  if preset == 'rd' then
-    vid.set(8,1,'SecuCODEX Code Door System')
+  elseif preset == 'rd' then
     vid.set(14,3,'ACCESS DENIED!')
   end
 end
