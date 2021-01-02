@@ -1,0 +1,49 @@
+{
+Menu = {'Help','','Edit','Copy','Move','','Dir','Del','','Exit'},
+MediumMenu = {' Help ','',' Edit ',' Copy ',' Move ','',' Dir  ',' Del  ','',' Exit '},
+LargeMenu = {' Help ','',' Edit ',' Copy ',' Move ','',' Dir  ',' Delete ','',' Exit '},
+Help = {
+  Header = {
+    '        <-{Midday Commander Plus}->',
+    '               Version ',
+    'Created by Zer0Galaxy, Neo, Totoro & Bs()Dd'
+    },
+  HelpText = {
+    'Up,Down,Tab- Navigation',
+    'Enter      - Change dir/run program',
+    'Ctrl+Enter - Insert into command line',
+    'Alt+Enter  - Hide panels',
+    'F1 - This help',
+    'F4 - Edit file',
+    'Shift+F4 - Create new file',
+    'F5 - Copy file/dir',
+    'F6 - Move file/dir',
+    'F7 - Create directory',
+    'Alt+F7 - Find file/dir',
+    'F8  - Delete file/dir',
+    'F10 - Exit from MCP'
+    }
+  },
+Delete = 'Do you want to delete',
+Yes = 'Yes',
+No = 'No',
+Ok = '<Ok>',
+AltOk = 'Ok',
+Cancel = 'Cancel',
+DIR = 'DIR',
+Overwrite = 'Overwrite it?',
+Error = 'Error!',
+IsNotFile = 'is not a file',
+FileName = 'File name:',
+DirName = 'Directory name:',
+FileExists = ' File exists ',
+Find = 'Find file/dir:',
+FindRes = 'Find: ',
+FindChars = 'Use ? and * for any char(s)',
+ToItself = 'Cannot copy/move file to itself!',
+To = 'to:',
+Byte = ' byte(s)',
+CopyFile = 'Copy file:',
+MoveFile = 'Move file:',
+ThankYou = 'Thank you for using Midday Commander Plus!'
+}
