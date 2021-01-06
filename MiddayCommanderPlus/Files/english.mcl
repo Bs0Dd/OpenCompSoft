@@ -6,7 +6,8 @@ Help = {
   Header = {
     '        <-{Midday Commander Plus}->',
     '               Version ',
-    'Created by Zer0Galaxy, Neo, Totoro & Bs()Dd'
+    'Created by Zer0Galaxy, Neo, Totoro & Bs()Dd',
+    '       Mailto: wladeus@drittereich.de'
     },
   HelpText = {
     'Up,Down,Tab- Navigation',
@@ -30,20 +31,25 @@ No = 'No',
 Ok = '<Ok>',
 AltOk = 'Ok',
 Cancel = 'Cancel',
+CopyFile = 'Copy file:',
+MoveFile = 'Move file:',
 DIR = 'DIR',
 Overwrite = 'Overwrite it?',
 Error = 'Error!',
 IsNotFile = 'is not a file',
+CpParDir = 'Cannot copy/move parent directory',
 FileName = 'File name:',
-DirName = 'Directory name:',
 FileExists = ' File exists ',
+FileEmpty = 'Cannot create a file without a name!'
+ToItself = 'Cannot copy/move file to itself!',
+DirName = 'Directory name:',
+DirEmpty = 'The folder name cannot be empty!',
+To = 'to:',
+Byte = ' byte(s)',
 Find = 'Find file/dir:',
 FindRes = 'Find: ',
 FindChars = 'Use ? and * for any char(s)',
-ToItself = 'Cannot copy/move file to itself!',
-To = 'to:',
-Byte = ' byte(s)',
-CopyFile = 'Copy file:',
-MoveFile = 'Move file:',
+FindEmpty = 'The search query must not be empty!',
+Exit = 'Are you sure you want to exit the program?',
 ThankYou = 'Thank you for using Midday Commander Plus!'
 }
