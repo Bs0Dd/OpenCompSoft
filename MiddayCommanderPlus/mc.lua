@@ -1,6 +1,9 @@
---[[      Midday Commander Color Ver. 1.8 ]]--
---[[ Created by Zer0Galaxy & Neo & Totoro ]]--
---[[              (c)  No rights reserved ]]--
+--[[               Midday Commander Plus Ver. 1.2a ]]--
+--[[         Original by Zer0Galaxy & Neo & Totoro ]]--
+--[[                        Plus version by Bs()Dd ]]--
+--[[ 2015-2016, 2020-2021  (c)  No rights reserved ]]--
+
+local VER = '1.2a'
 
 local unicode = require('unicode')
 local len=unicode.len
@@ -10,25 +13,59 @@ local term = require('term')
 local shell = require('shell')
 local event = require('event')
 local com = require('component')
+local pc = require('computer')
 local gpu = com.gpu
 local keyboard = require('keyboard')
+local seriz = require('serialization')
 
-local colors = {
-  white = 0xFFFFFF,
-  black = 0x000000,
-  blue  = 0x0060A0,
-  green = 0x336600,
-  orange= 0xffcc33,
-  red   = 0xee3b3b
-}
+local configPath = "/etc/mc.cfg"
+
+local function LoadTable(path, name)
+  local encoded
+  local file, why = io.open(path, 'r')
+  if file == nil then
+    print("Can't open "..name.." file: "..(why or "unknown reason"))
+    os.exit()
+  else
+    local rawdata = file:read(fs.size(path))
+    encoded, why = seriz.unserialize(rawdata)
+    if encoded == nil then
+      print("Incorrect "..name.." file: "..(why or "unknown reason"))
+      os.exit()
+    end
+  end
+  return encoded
+end
+
+local config = LoadTable(configPath, 'config')
+local locale = LoadTable(config.LocaleFile, 'locale')
+local theme
+
 local keys = keyboard.keys
 local Left,Rght,Active,Find
 local wScr, hScr = gpu.maxResolution()
-if wScr>80 then wScr,hScr=80,25 end
 local cmd, scr, Menu
 local NormalCl, PanelCl, DirCl, SelectCl, WindowCl, AlarmWinCl
 local xMenu,cmdstr,curpos,work=-1,'',0,true
 local Shift,Ctrl,Alt=256,512,1024
+local lastClick=0
+
+if wScr>50 then
+  theme = LoadTable(config.ThemeFile, 'theme')
+end
+
+local helpt
+  if wScr<80 then
+    helpt = locale.Help.HelpText
+  else
+    helpt = locale.Help.Header
+    helpt[2] = helpt[2]..VER
+    helpt[#helpt+1] = ''
+    for i=1,#locale.Help.HelpText do
+        helpt[#helpt+1] = locale.Help.HelpText[i]
+    end
+  end
+helpt.left = true
 
 local function SetColor(cl)
   gpu.setForeground(cl[1])
@@ -103,7 +140,7 @@ function panel:ShowLine(Line)
   term.write('│')
   if self.tFiles[Line]~=nil then
     local Name=self.tFiles[Line]
-    if self.tSize[Line]=='DIR' then Name='/'..Name SetColor(DirCl) end
+    if self.tSize[Line]==locale.DIR then Name='/'..Name SetColor(DirCl) end
     if len(Name)>self.wPan-4 then Name=sub(Name,1,self.wPan-6)..'..' end
     Name=' '..Name..string.rep(' ',self.wPan-len(Name)-4)..' '
     if self==Active and Line==self.CurLine then SetColor(SelectCl) end
@@ -142,19 +179,19 @@ function panel:GetFiles()
     self.tSize={}
   else
     self.tFiles={'..'}
-    self.tSize={'DIR'}
+    self.tSize={locale.DIR}
   end
   for n,Item in pairs(Files) do
     if Item:sub(-1) == '/' then
       table.insert(self.tFiles,Item)
-      table.insert(self.tSize,'DIR')
+      table.insert(self.tSize,locale.DIR)
     end
   end
   for n,Item in pairs(Files) do
     if Item:sub(-1) ~= '/' then
       local sPath=fs.concat(self.Path,Item)
       table.insert(self.tFiles,Item)
-      table.insert(self.tSize,fs.size(sPath).." b")
+      table.insert(self.tSize,fs.size(sPath)..locale.Bytes)
     end
   end
   self:Show()
@@ -216,10 +253,10 @@ function Fpanel:GetFiles()
   for i=1,#code do Templ=Templ:gsub(code[i][1],code[i][2]) end
   self.tFiles=FindFile('^'..Templ..'$','')
   table.insert(self.tFiles,1,'..')
-  self.tSize={'DIR'}
+  self.tSize={locale.DIR}
   for i=2,#self.tFiles do
     if fs.isDirectory(self.tFiles[i]) then
-      self.tSize[i]='DIR'
+      self.tSize[i]=locale.DIR
     else
       self.tSize[i]=tostring(fs.size(self.tFiles[i]))
     end
@@ -228,7 +265,7 @@ function Fpanel:GetFiles()
 end
 
 function Fpanel:ShowFirst()
-  local p='Find:'..self.Path
+  local p=locale.FindRes..self.Path
   if len(p)> self.wPan-6 then p='..'..sub(p,-self.wPan+7) end
   p=' '..p..' '
   gpu.set(self.X, 1,'┌'..string.rep('─',self.wPan-2)..'┐')
@@ -263,7 +300,7 @@ local function Dialog(cl,Lines,Str,But)
   local H=#Lines+3
   local CurBut=1
   if Str then H=H+1 CurBut=0 end
-  if not But then But={'Ok'} end
+  if not But then But={locale.AltOk} end
   local function Buttons()
     local Butt=''
     for i=1,#But do
@@ -284,17 +321,44 @@ local function Dialog(cl,Lines,Str,But)
   local x= math.ceil((wScr-W)/2)
   local y= math.ceil((hScr-H)/2)+1
   gpu.set(x-1, y, ' ╔'..string.rep('═',W-2)..'╗ ')
+  local dept = gpu.getDepth()
+  local dlgLen = len(' ║'..string.rep(' ',W-2)..'║ ')
   for i=1,#Lines+2 do
     gpu.set(x-1, y+i, ' ║'..string.rep(' ',W-2)..'║ ')
+    if dept > 1 then 
+      local sym = gpu.get(x-1+dlgLen, y+i)
+      local sym2 = gpu.get(x+dlgLen, y+i)
+      SetColor({0xCCCCCC, 0x000000})
+      gpu.set(x-1+dlgLen, y+i, sym)
+      gpu.set(x+dlgLen, y+i, sym2)
+      SetColor(cl)
+    end
   end
   gpu.set(x-1, y+H-1,' ╚'..string.rep('═',W-2)..'╝ ')
+  if dept > 1 then
+    local sym = gpu.get(x-1+dlgLen, y+H-1)
+    local sym2 = gpu.get(x+dlgLen, y+H-1)
+    SetColor({0xCCCCCC, 0x000000})
+    gpu.set(x-1+dlgLen, y+H-1, sym)
+    gpu.set(x+dlgLen, y+H-1, sym2)
+    for i=1, dlgLen do
+      local sym = gpu.get(x+i,y+H)
+      gpu.set(x+i,y+H, sym)
+    end
+    SetColor(cl)
+  end
   for i=1,#Lines do
     if Lines.left then gpu.set(x+2, y+i, Lines[i])
     else gpu.set(x+(W-len(Lines[i]))/2, y+i, Lines[i]) end
   end
-
+  local mButtons = {}
+  local Butt=''
+  local ButtX = math.floor(x+(W-len(Buttons()))/2)
+  for i=1,#But do
+    table.insert(mButtons, {len(Butt)+ButtX-1, len(Butt..' '..But[i]..' ')+ButtX, But[i]})
+    Butt=Butt..' '..But[i]..' '
+  end
   while true do
-    term.setCursorBlink(CurBut==0)
     term.setCursor(x+(W-len(Buttons()))/2, y+H-2)
     term.write(Buttons())
     if CurBut==0 then
@@ -302,8 +366,10 @@ local function Dialog(cl,Lines,Str,But)
       if len(S)>W-4 then S='..'..sub(S,-W+6) end
       term.setCursor(x+2, y+H-3)  term.write(S)
     end
-
-    local eventname, _, ch, code = event.pull('key_down')
+    local evt
+    if CurBut==0 then evt = term
+    else evt = event end
+    local eventname, _, ch, code = evt.pull()
     if eventname == 'key_down' then
       if code == keys.enter then
         if CurBut==0 then CurBut=1 end
@@ -320,6 +386,19 @@ local function Dialog(cl,Lines,Str,But)
         if #Str>0 then gpu.set(x+1, y+H-3, string.rep(' ',W-2)) Str=sub(Str,1,-2) end
       elseif ch > 0 and CurBut == 0 then
         Str = Str..unicode.char(ch)
+      end
+    elseif eventname == 'clipboard' then
+      if CurBut == 0 then
+        Str = Str..ch
+      end
+    elseif eventname == 'touch' then
+      if code == y+H-2 then
+        for i=1, #mButtons do
+          if ch>mButtons[i][1] and ch<mButtons[i][2] then
+            if CurBut==0 then CurBut=1 end
+            return mButtons[i][3],Str
+          end
+        end
       end
     end
   end
@@ -340,7 +419,7 @@ local function CpMv(func,from,to)
     if func==fs.rename then call(fs.remove,from) end
   else
     if fs.exists(to) then
-      if Dialog(AlarmWinCl,{'File already exists!',to,'Overwrite it?'},nil,{'Yes','No'})=='Yes' then
+      if Dialog(AlarmWinCl,{locale.FileExists,to,locale.Overwrite},nil,{locale.Yes,locale.No})==locale.Yes then
         if not call(fs.remove,to) then return end
       end
     end
@@ -352,10 +431,12 @@ local function CopyMove(action,func)
   if Active==Find then return end
   Name = ((Active==Rght) and Left or Rght).Path..'/'..cmd
   cmd=Active.Path..'/'..cmd
-  local Ok,Name=Dialog(WindowCl,{action,cmd,'to:'},Name,{'<Ok>','Cancel'})
-  if Ok=='<Ok>' then
-    if cmd==Name then
-      Dialog(AlarmWinCl,{'Cannot copy/move file to itself!'})
+  local Ok,Name=Dialog(WindowCl,{action,cmd,locale.To},Name,{locale.Ok,locale.Cancel})
+  if Ok==locale.Ok then
+    if cmd:sub(-2) == '..' then
+      Dialog(AlarmWinCl,{locale.CpParDir})
+    elseif cmd==Name then
+      Dialog(AlarmWinCl,{locale.ToItself})
     else
       CpMv(func, cmd, Name)
     end
@@ -402,23 +483,33 @@ eventKey[keys.right]=function()
   if curpos>0 then curpos=curpos-1 end
 end
 
-eventKey[keys.tab]=function()
+eventKey[keys.tab]=function(noShow)
   if Active==Find then return end
   Active = (Active==Rght) and Left or Rght
   shell.setWorkingDirectory(Active.Path)
-  ShowPanels()
+  if not noShow then ShowPanels() end
 end
 
 eventKey[keys.enter]=function()
-  local function exec(cmd)
+  local function exec(cmd, fromstr)
     loadScreen() scr=nil
-    shell.execute(cmd)
+    if fromstr then shell.execute(cmd)
+    elseif fs.name(cmd):match("(%.%w+)$")==nil then
+      shell.execute(Active.Path..'/'..cmd)
+    else
+      local extLow = fs.name(cmd):match("(%.%w+)$"):lower()
+      if config.Associations[extLow] ~= nil then
+        shell.execute(config.Associations[extLow]..' '..cmd)
+      else
+        shell.execute(Active.Path..'/'..cmd)
+      end
+    end
     saveScreen()
     ShowPanels()
   end
   curpos=0
   if cmdstr~='' then
-    exec(cmdstr)
+    exec(cmdstr, true)
     cmdstr=''
     return
   end
@@ -428,7 +519,7 @@ eventKey[keys.enter]=function()
     ShowPanels()
     return
   end
-  if Active.tSize[Active.CurLine]=='DIR' then
+  if Active.tSize[Active.CurLine]==locale.DIR then
     if cmd=='..' then  Active:SetPos(Active.Path)
     else  Active:SetPos(shell.resolve(cmd)..'/..')  end
     Active:Show()
@@ -475,58 +566,51 @@ eventKey[keys.home]=function() curpos=len(cmdstr) end
 
 eventKey[keys.f1]=function()
   if Active==Find then return end
-  Dialog(SelectCl,{
-"Up,Down,Tab- Navigation",
-'Enter      - Change dir/run program',
-'Ctrl+Enter - Insert into command line',
-'Alt+Enter  - Hide panels',
-'F1 - This help',
-'F4 - Edit file',
-'Shift+F4 - Create new file',
-'F5 - Copy file/dir',
-'F6 - Move file/dir',
-'F7 - Create directory',
-'Alt+F7 - Find file/dir',
-'F8  - Delete file/dir',
-'F10 - Exit from MC',left=true})
+  Dialog(SelectCl,helpt)
+  ShowPanels()
+end
+
+eventKey[keys.f3]=function()
+  if Active.tSize[Active.CurLine]==locale.DIR then
+    Dialog(AlarmWinCl,{locale.Error, cmd, locale.IsNotFile})
+  else
+    SetColor(NormalCl)
+    term.setCursorBlink(false)
+    shell.execute(config.Editor..' '..cmd)
+  end
+  ShowPanels()
+end
+
+eventKey[Shift+keys.f3]=function()
+  local Ok,Name=Dialog(WindowCl,{locale.FileName},'',{locale.Ok,locale.Cancel})
+  if Ok==locale.Ok then
+    if Name == '' then
+      Dialog(AlarmWinCl,{locale.FileEmpty})
+    else
+      SetColor(NormalCl)
+      shell.execute(config.Editor..' '..Name)
+    end
+  end
   ShowPanels()
 end
 
 eventKey[keys.f4]=function()
-  if Active.tSize[Active.CurLine]=='DIR' then
-    Dialog(AlarmWinCl,{'Error!', cmd, 'is not a file'})
-  else
-    SetColor(NormalCl)
-    term.setCursorBlink(false)
-    shell.execute('edit '..cmd)
-  end
-  ShowPanels()
-end
-
-eventKey[Shift+keys.f4]=function()
-  local Ok,Name=Dialog(WindowCl,{'File name:'},'',{'<Ok>','Cancel'})
-  if Ok=='<Ok>' then
-    SetColor(NormalCl)
-    shell.execute('edit '..Name)
-  end
-  ShowPanels()
+  CopyMove(locale.CopyFile,fs.copy)
 end
 
 eventKey[keys.f5]=function()
-  CopyMove('Copy file:',fs.copy)
-end
-
-eventKey[keys.f6]=function()
-  CopyMove('Move file:',fs.rename)
+  CopyMove(locale.MoveFile,fs.rename)
 end
 
 eventKey[keys.f7]=function()
   if Active==Find then return end
-  local Ok,Name=Dialog(WindowCl,{'Directory name:'},'',{'<Ok>','Cancel'})
-  if Ok=='<Ok>' then
-    if Name=='..' or fs.exists(shell.resolve(Name)) then
+  local Ok,Name=Dialog(WindowCl,{locale.DirName},'',{locale.Ok,locale.Cancel})
+  if Ok==locale.Ok then
+    if Name == '' then
+      Dialog(AlarmWinCl,{locale.DirEmpty})
+    elseif Name=='..' or Name=='/..' or fs.exists(shell.resolve(Name)) then
       ShowPanels()
-      Dialog(AlarmWinCl,{' File exists '})
+      Dialog(AlarmWinCl,{locale.FileExists})
     else
       fs.makeDirectory(shell.resolve(Name))
     end
@@ -535,8 +619,13 @@ eventKey[keys.f7]=function()
 end
 
 eventKey[Alt+keys.f7]=function()
-  local Ok,Name=Dialog(WindowCl,{'Find file/dir:','Use ? and * for any char(s)'},'',{'<Ok>','Cancel'})
-  if Ok=='<Ok>' then
+  local Ok,Name=Dialog(WindowCl,{locale.Find,locale.FindChar1,locale.FindChar2},'',{locale.Ok,locale.Cancel})
+  if Ok==locale.Ok then
+    if Name == '' then
+      Dialog(AlarmWinCl,{locale.FindEmpty})
+      ShowPanels()
+      return
+    end
     Find.Path=Name
     Find.CurLine=1
     Find.Shift=1
@@ -551,49 +640,110 @@ end
 
 eventKey[keys.f8]=function()
   if Active==Find then return end
-  if Dialog(AlarmWinCl,{'Do you want to delete', cmd..'?'}, nil, {'Yes','No'})=='Yes' then
+  if Dialog(AlarmWinCl,{locale.Delete, cmd..'?'}, nil, {locale.Yes,locale.No})==locale.Yes then
     call(fs.remove,shell.resolve(cmd))
   end
   ShowPanels()
 end
 
 eventKey[keys.f10]=function()
-  work=false
+  if Dialog(WindowCl,{locale.Exit}, nil, {locale.Yes,locale.No})==locale.Yes then
+    work=false
+  else
+    ShowPanels()
+  end
 end
 
-NormalCl={colors.white,colors.black}
+local function eventTouch(tx,ty,mTouch)
+  code = 0
+  local panChang = false
+  if keyboard.isShiftDown() then code=code+Shift end
+  if keyboard.isControlDown() then code=code+Ctrl end
+  if keyboard.isAltDown() then code=code+Alt end
+  if ty<hScr-1 then
+    if Active==Rght and tx<wScr/2+1 then eventKey[keys.tab](true) panChang = true
+    elseif Active==Left and tx>wScr/2 then eventKey[keys.tab](true) panChang = true end
+    SetColor(PanelCl)
+  end
+  if ty == hScr then
+    for i=1, #mTouch do
+      if tx>mTouch[i][1] and tx<mTouch[i][2] and eventKey[code+mTouch[i][3]]~=nil then 
+        eventKey[code+mTouch[i][3]]() 
+        return
+      end
+    end
+  elseif ty>1 and ty<hScr-2 then
+    if ty-1 == Active.CurLine and (code==0 or code==Ctrl) and
+     not panChang and lastClick >= pc.uptime()-config.ClickDelay then
+      if code==0 then cmdstr = '' end
+      eventKey[code+keys.enter]()
+    elseif ty-2<#Active.tFiles then
+      local Line=Active.CurLine
+      Active.CurLine=ty+Active.Shift-2
+      Active:ShowLine(Active.CurLine)
+      Active:ShowLine(Line)
+      Active:ShowLast()   
+    end
+  end
+  if panChang then ShowPanels() end
+  lastClick = pc.uptime()
+end
+
+local function eventScroll(direction)
+  if direction==1 then
+    eventKey[keys.up]()
+  elseif direction==-1 then
+    eventKey[keys.down]()
+  end
+end
+
+NormalCl={0xFFFFFF,0x000000}
 if gpu.getDepth() > 1 then
-  PanelCl={colors.white,colors.blue}
-  DirCl={colors.orange,colors.blue}
-  SelectCl={colors.black,colors.orange}
-  WindowCl={colors.white,colors.green}
-  AlarmWinCl={colors.white,colors.red}
+  PanelCl=theme.Panels
+  DirCl=theme.Dirs
+  SelectCl=theme.Selected
+  WindowCl=theme.Window
+  AlarmWinCl=theme.AlarmWindow
 else
   PanelCl=NormalCl
   DirCl=NormalCl
-  SelectCl={colors.black,colors.white}
+  SelectCl={0x000000,0xFFFFFF}
   WindowCl=NormalCl
   AlarmWinCl=NormalCl
 end
 if wScr<80 then
-  Menu={'Help','','','Edit','Copy','Move','Dir','Del','','Exit'}
+  Menu=locale.Menu
+elseif wScr<160 then
+  Menu=locale.MediumMenu
 else
-  Menu={' Help ','','',' Edit ',' Copy ',' Move ',' Dir  ',' Del  ','',' Exit '}
+  Menu=locale.LargeMenu
 end
 for i=1,#Menu do
   if #Menu[i]>0 then xMenu=xMenu+#tostring(i)+len(Menu[i])+2 end
 end
 xMenu=math.floor((wScr-xMenu) / 2)
+local mTouch = {}
+table.insert(mTouch, {xMenu, xMenu+len(Menu[1])+3, 59})
+j=2
+for i=2,#Menu do
+  if #Menu[i]>0 then table.insert(mTouch, 
+                     {mTouch[j-1][2], mTouch[j-1][2]+2+len(Menu[i])+len(tostring(i)), 58+i}) j=j+1 end
+end
+
+local curwd =shell.getWorkingDirectory():sub(1,-1)~='/' and shell.getWorkingDirectory():sub(1,-1) or ''
 Left =panel:new(1,'')
-Rght =panel:new(Left.wPan+1,shell.getWorkingDirectory():sub(1,-2))
+Rght =panel:new(Left.wPan+1,curwd)
 Find =Fpanel:new(1,'')
 Active =Rght
+
+print('The Midday Commander Plus, Version '..VER)
+print('Not Copyright (C) 2015-2016, 2020-2021 by Zer0Galaxy, Neo, Totoro & Bs()Dd')
 
 saveScreen()
 ShowPanels()
 ShowCmd()
 while work do
-  local eventname, _, char, code, dir = event.pull()
+  local eventname, _, char, code, dir = term.pull()
   cmd=Active.tFiles[Active.CurLine]
   if eventname =='key_down' then
     if keyboard.isShiftDown() then code=code+Shift end
@@ -609,7 +759,22 @@ while work do
       end
       ShowCmd()
     end
+  elseif eventname =='clipboard' then
+    if char ~='' then
+      if curpos==0 then cmdstr=cmdstr..char
+      else cmdstr=cmdstr:sub(1,-1-curpos)..char..cmdstr:sub(-curpos)
+      end
+    end
+    ShowCmd()
+  elseif eventname =='touch' then
+    SetColor(PanelCl)
+    eventTouch(char, code, mTouch)
+    ShowCmd()
+  elseif eventname =='scroll' then
+    SetColor(PanelCl)
+    eventScroll(dir)
+    ShowCmd()
   end
 end
 loadScreen()
-print('Thank you for using Midday Commander!')
+print('\n'..locale.ThankYou)
