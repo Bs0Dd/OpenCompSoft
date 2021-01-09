@@ -401,7 +401,7 @@ local function Dialog(cl,Lines,Str,But)
             return mButtons[i][3],Str
           end
         end
-      elseif code == y+H-3 then
+      elseif code == y+H-3 and Str then
         if ch>x+1 and ch<x+dlgLen-4 then CurBut=0 end
       end
     end
