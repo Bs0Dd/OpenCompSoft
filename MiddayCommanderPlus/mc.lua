@@ -21,20 +21,20 @@ local seriz = require('serialization')
 local configPath = "/etc/mc.cfg"
 
 local function LoadTable(path, name)
-  local encoded
+  local unseriz
   local file, why = io.open(path, 'r')
   if file == nil then
     print("Can't open "..name.." file: "..(why or "unknown reason"))
     os.exit()
   else
     local rawdata = file:read(fs.size(path))
-    encoded, why = seriz.unserialize(rawdata)
-    if encoded == nil then
+    unseriz, why = seriz.unserialize(rawdata)
+    if unseriz == nil then
       print("Incorrect "..name.." file: "..(why or "unknown reason"))
       os.exit()
     end
   end
-  return encoded
+  return unseriz
 end
 
 local config = LoadTable(configPath, 'config')
