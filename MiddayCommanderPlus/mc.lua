@@ -322,7 +322,7 @@ local function Dialog(cl,Lines,Str,But)
   local y= math.ceil((hScr-H)/2)+1
   gpu.set(x-1, y, ' ╔'..string.rep('═',W-2)..'╗ ')
   local dept = gpu.getDepth()
-  local dlgLen = len(' ║'..string.rep(' ',W-2)..'║ ')
+  local dlgLen = W+2
   for i=1,#Lines+2 do
     gpu.set(x-1, y+i, ' ║'..string.rep(' ',W-2)..'║ ')
     if dept > 1 then 
@@ -362,9 +362,12 @@ local function Dialog(cl,Lines,Str,But)
     term.setCursor(x+(W-len(Buttons()))/2, y+H-2)
     term.write(Buttons())
     if CurBut==0 then
+      gpu.setBackground(0x333333)
       local S=Str
       if len(S)>W-4 then S='..'..sub(S,-W+6) end
+      gpu.set(x+2, y+H-3, string.rep(' ',W-4))
       term.setCursor(x+2, y+H-3)  term.write(S)
+      gpu.setBackground(cl[2])
     end
     local evt
     if CurBut==0 then evt = term
@@ -395,10 +398,11 @@ local function Dialog(cl,Lines,Str,But)
       if code == y+H-2 then
         for i=1, #mButtons do
           if ch>mButtons[i][1] and ch<mButtons[i][2] then
-            if CurBut==0 then CurBut=1 end
             return mButtons[i][3],Str
           end
         end
+      elseif code == y+H-3 then
+        if ch>x+1 and ch<x+dlgLen-4 then CurBut=0 end
       end
     end
   end
