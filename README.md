@@ -8,6 +8,9 @@ Some Lua software for OpenComputers
 * `OpenWebNet` - In-world network protocol for web pages and content sharing
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
+* `Midday Commander Plus` - NC-style file manager, fork from [original MC](https://github.com/OpenPrograms/OpenPrograms.ru/tree/master/mc)
+
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
 * `RemoteDISK` - Network Disk server (RC daemon) and client with Driver library
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/README.md)
