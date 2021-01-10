@@ -64,10 +64,10 @@ pattern.
 
 `F8` — remove a file or directory. You'll be asked for confirmation before
 removing.  
-<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Video3.png" alt="Screenshot 9: The &#34;Remove the file&#34; dialog" width="230" height="146">
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Delete.png" alt="Screenshot 9: The &#34;Remove the file&#34; dialog" width="230" height="146">
 
 `F10` — exit.  
-
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Exit.png" alt="Screenshot 9: The &#34;Exit&#34; dialog" width="230" height="146">
 
 ## Links
 * [The topic on the forum](http://computercraft.ru/topic/)
