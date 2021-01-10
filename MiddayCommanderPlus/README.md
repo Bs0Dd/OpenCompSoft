@@ -43,14 +43,14 @@ Also, you can press `Alt` + `Enter` to hide MC.
 `F4` — open an editor with the selected file.
 
 `Shift` + `F4` — create a new file.  
-<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Newfile.png" alt="Screenshot 5: The "Create new file" dialog" width="230" height="146">
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Newfile.png" alt="Screenshot 5: The &#34;Create new file&#34; dialog" width="230" height="146">
 
 `F5`/`F6` — copy/move a selected file to the another panel's current directory. You can
 copy under another name if you want so.  
-<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Copy.png" alt="Screenshot 6: The "Copy the file" dialog" width="230" height="146">
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Copy.png" alt="Screenshot 6: The &#34;Copy the file&#34; dialog" width="230" height="146">
 
 `F7` — create a new directory.  
-<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Newdir.png" alt="Screenshot 7: The "Copy the file" dialog" width="230" height="146">
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Newdir.png" alt="Screenshot 7: The &#34;Directory name&#34; dialog" width="230" height="146">
 
 `Alt` + `F7` — search for a file or directory.  
 You can use `?` and `*` masks.
@@ -60,14 +60,11 @@ You can use `?` and `*` masks.
 
 For example, to search for all files that start with `co`, you can use the `co*`
 pattern.  
-<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Video3.png" alt="Screenshot 78" width="230" height="146"> <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Video3.png" alt="Screenshot 3" width="230" height="146">
-![Screenshot 6: The "Search" dialog](http://computercraft.ru/uploads/monthly_04_2016/post-7-0-58966600-1459869362.png)
-![Screenshot 7: The "Search results" dialog](http://computercraft.ru/uploads/monthly_04_2016/post-7-0-58966600-1459869362.png)
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Find.png" alt="Screenshot 8: The &#34;Search&#34; dialog" width="230" height="146"> <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Results.png" alt="Screenshot 8: The &#34;Search results&#34; dialog" width="230" height="146">
 
 `F8` — remove a file or directory. You'll be asked for confirmation before
 removing.  
-<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Video3.png" alt="Screenshot 9" width="230" height="146">
-![Screenshot 9: The "Remove the file" dialog](http://computercraft.ru/uploads/monthly_04_2016/post-7-0-34415400-1459869339.png)
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Video3.png" alt="Screenshot 9: The &#34;Remove the file&#34; dialog" width="230" height="146">
 
 `F10` — exit.  
 
