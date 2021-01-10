@@ -362,12 +362,12 @@ local function Dialog(cl,Lines,Str,But)
     term.setCursor(x+(W-len(Buttons()))/2, y+H-2)
     term.write(Buttons())
     if CurBut==0 then
-      gpu.setBackground(0x333333)
+      SetColor({0xFFFFFF, 0x333333})
       local S=Str
       if len(S)>W-4 then S='..'..sub(S,-W+6) end
       gpu.set(x+2, y+H-3, string.rep(' ',W-4))
       term.setCursor(x+2, y+H-3)  term.write(S)
-      gpu.setBackground(cl[2])
+      SetColor(cl)
     end
     local evt
     if CurBut==0 then evt = term
