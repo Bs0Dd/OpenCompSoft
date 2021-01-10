@@ -12,6 +12,10 @@ Made for those who are not experienced with command-line interfaces.
 ## Installation
 Insert Internet card and type: `pastebin run `
 
+The program comes with:
+   1. Language mcl files for Russian and English (by default, English is set)
+   2. Three mct themes - "Standart", "Redstone" and "Darkness" (alas, I am not a designer, so the absence of eyelash in themes is not guaranteed)
+
 ## Description
 The programs supports any screens with any color depth or resolution.
 
@@ -27,13 +31,34 @@ of the lists.
 Below it is a command prompt, and a list of the actions invoked by pressing
 a corresponding functional (`Fn`) key.
 
-Use arrow keys to navigate through the files, and pressing the `Tab` key moves
+Use arrow keys or mouse to navigate through the files, and pressing the `Tab` key or clicking on another panel moves
 the focus to another panel. The `Enter` key is used to run a program or go to
 a directory. To run a program and pass it arguments, hold `Ctrl` and press
-`Enter`. The name of program will be pasted to the command prompt.
+`Enter` (or double click on the element). The name of program will be pasted to the command prompt.
 Type the arguments, and press `Enter`.
 
-Also, you can press `Alt` + `Enter` to hide MC.
+Also, you can press `Alt` + `Enter` to hide MCP.
+
+The main differences from the original version:
+  1. Supports 160x50 video mode
+  2. Shadows by the windows (like Norton)
+  3. Mouse support
+  4. Multilingual (language data is placed in a separate .mcl file)
+  5. Themes support (data on colors of elements are placed in a separate .mct file)
+  6. Association system
+
+Program parameters are located in the config file - `/etc/mc.cfg`
+
+## Associaton system
+
+In modern operating systems like Linux, MacOS and Windows, when opening, say, a .jpg image, the system will not launch it, but will launch the viewer associated with this format, passing it this file. A similar system is implemented here.
+In the config there is a field "Associations", where you can specify for which file which program will be launched.
+
+Entries are of the form ['extension'] = 'program and arguments'.
+
+For example, the entry ['.txt'] = 'edit' means that when you double-click on a file with the .txt extension, the edit editor will be called with the path argument to the file.
+
+Associations do not work if the file is launched from the manager command line.
 
 ## Actions
 
