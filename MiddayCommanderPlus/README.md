@@ -95,5 +95,5 @@ removing.
 <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Exit.png" alt="Screenshot 9: The &#34;Exit&#34; dialog" width="230" height="146">
 
 ## Links
-* [The topic on the forum](http://computercraft.ru/topic/)
-* [Installer on Pastebin](http://pastebin.com/pc73b8bB)
+* [The topic on the forum](https://computercraft.ru/topic/3952-midday-commander-plus-vozrozhdenie-iz-pepla/)
+* [Installer on Pastebin](https://pastebin.com/pc73b8bB)
