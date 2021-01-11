@@ -355,7 +355,7 @@ local function Dialog(cl,Lines,Str,But)
   local Butt=''
   local ButtX = math.floor(x+(W-len(Buttons()))/2)
   for i=1,#But do
-    table.insert(mButtons, {len(Butt)+ButtX-1, len(Butt..' '..But[i]..' ')+ButtX, But[i]})
+    table.insert(mButtons, {len(Butt)+ButtX-1, len(Butt..But[i])+ButtX+2, But[i]})
     Butt=Butt..' '..But[i]..' '
   end
   while true do
