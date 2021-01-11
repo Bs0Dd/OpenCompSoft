@@ -410,7 +410,7 @@ end
 
 local function call(func,...)
   local r,e=func(...)
-  if not r then Dialog(AlarmWinCl,{e}) end
+  if not r then pc.beep(1000) Dialog(AlarmWinCl,{e}) end
   return r
 end
 
@@ -423,6 +423,7 @@ local function CpMv(func,from,to)
     if func==fs.rename then call(fs.remove,from) end
   else
     if fs.exists(to) then
+      pc.beep(1000)
       if Dialog(AlarmWinCl,{locale.FileExists,to,locale.Overwrite},nil,{locale.Yes,locale.No})==locale.Yes then
         if not call(fs.remove,to) then return end
       end
@@ -438,8 +439,10 @@ local function CopyMove(action,func)
   local Ok,Name=Dialog(WindowCl,{action,cmd,locale.To},Name,{locale.Ok,locale.Cancel})
   if Ok==locale.Ok then
     if cmd:sub(-2) == '..' then
+      pc.beep(1000)
       Dialog(AlarmWinCl,{locale.CpParDir})
     elseif cmd==Name then
+      pc.beep(1000)
       Dialog(AlarmWinCl,{locale.ToItself})
     else
       CpMv(func, cmd, Name)
@@ -576,6 +579,7 @@ end
 
 eventKey[keys.f3]=function()
   if Active.tSize[Active.CurLine]==locale.DIR then
+    pc.beep(1000)
     Dialog(AlarmWinCl,{locale.Error, cmd, locale.IsNotFile})
   else
     SetColor(NormalCl)
@@ -589,6 +593,7 @@ eventKey[Shift+keys.f3]=function()
   local Ok,Name=Dialog(WindowCl,{locale.FileName},'',{locale.Ok,locale.Cancel})
   if Ok==locale.Ok then
     if Name == '' then
+      pc.beep(1000)
       Dialog(AlarmWinCl,{locale.FileEmpty})
     else
       SetColor(NormalCl)
@@ -611,9 +616,11 @@ eventKey[keys.f7]=function()
   local Ok,Name=Dialog(WindowCl,{locale.DirName},'',{locale.Ok,locale.Cancel})
   if Ok==locale.Ok then
     if Name == '' then
+      pc.beep(1000)
       Dialog(AlarmWinCl,{locale.DirEmpty})
     elseif Name=='..' or Name=='/..' or fs.exists(shell.resolve(Name)) then
       ShowPanels()
+      pc.beep(1000)
       Dialog(AlarmWinCl,{locale.FileExists})
     else
       fs.makeDirectory(shell.resolve(Name))
@@ -626,6 +633,7 @@ eventKey[Alt+keys.f7]=function()
   local Ok,Name=Dialog(WindowCl,{locale.Find,locale.FindChar1,locale.FindChar2},'',{locale.Ok,locale.Cancel})
   if Ok==locale.Ok then
     if Name == '' then
+      pc.beep(1000)
       Dialog(AlarmWinCl,{locale.FindEmpty})
       ShowPanels()
       return
@@ -644,7 +652,9 @@ end
 
 eventKey[keys.f8]=function()
   if Active==Find then return end
-  if Dialog(AlarmWinCl,{locale.Delete, cmd..'?'}, nil, {locale.Yes,locale.No})==locale.Yes then
+  pc.beep(1000)
+  if cmd:sub(-2)=='..' then Dialog(AlarmWinCl,{locale.DelParDir})
+  elseif Dialog(AlarmWinCl,{locale.Delete, cmd..'?'}, nil, {locale.Yes,locale.No})==locale.Yes then
     call(fs.remove,shell.resolve(cmd))
   end
   ShowPanels()
