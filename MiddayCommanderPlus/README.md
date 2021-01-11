@@ -10,7 +10,7 @@ Made for those who are not experienced with command-line interfaces.
 * Bs()Dd (also spelled Bs0Dd) - the Plus version.
 
 ## Installation
-Insert Internet card and type: `pastebin run `
+Insert Internet card and type: `pastebin run pc73b8bB`
 
 The program comes with:
    1. Language mcl files for Russian and English (by default, English is set)
@@ -32,7 +32,7 @@ Below it is a command prompt, and a list of the actions invoked by pressing
 a corresponding functional (`Fn`) key.
 
 Use arrow keys or mouse to navigate through the files, and pressing the `Tab` key or clicking on another panel moves
-the focus to another panel. The `Enter` key is used to run a program or go to
+the focus to another panel. The `Enter` key (or double click) is used to run a program or go to
 a directory. To run a program and pass it arguments, hold `Ctrl` and press
 `Enter` (or double click on the element). The name of program will be pasted to the command prompt.
 Type the arguments, and press `Enter`.
@@ -96,4 +96,4 @@ removing.
 
 ## Links
 * [The topic on the forum](http://computercraft.ru/topic/)
-* [Installer on Pastebin](http://pastebin.com/)
+* [Installer on Pastebin](http://pastebin.com/pc73b8bB)
