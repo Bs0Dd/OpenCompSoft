@@ -1,4 +1,4 @@
-#SecuCODEX EEPROM
+# SecuCODEX EEPROM
 
 Program-system for password and "fingerprint" based access computer system
 Adapted for working from EEPROM
@@ -29,8 +29,8 @@ Minimal requirements for Color Edition:
 Install Tier 3 Computer, Video Card and Monitor to set 256 color mode in program
 
 Installing:
- 1. Download file 
-    Color: `pastebin get jJWDicaJ bios.lua`
+ 1. Download file  
+    Color: `pastebin get jJWDicaJ bios.lua`  
     Mono: `pastebin get jJWDicaJ bios.lua`
  2. Flash it to EEPROM: `flash bios.lua`
  3. Insert EEPROM to access computer system and turn it
