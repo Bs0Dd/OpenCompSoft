@@ -30,8 +30,8 @@ Install Tier 3 Computer, Video Card and Monitor to set 256 color mode in program
 
 Installing:
  1. Download file  
-    Color: `pastebin get a7PB1727 bios.lua`  
-    Mono: `pastebin get 1ADHwp7L bios.lua`
+    Color: `pastebin get LDaBxe3B bios.lua`  
+    Mono: `pastebin get REEWkvhf bios.lua`
  2. Flash it to EEPROM: `flash bios.lua`
  3. Insert EEPROM to access computer system and turn it
  4. Make first Setup
