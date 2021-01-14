@@ -1,9 +1,9 @@
---[[               Midday Commander Plus Ver. 1.2a ]]--
+--[[               Midday Commander Plus Ver. 1.2b ]]--
 --[[         Original by Zer0Galaxy & Neo & Totoro ]]--
 --[[                        Plus version by Bs()Dd ]]--
 --[[ 2015-2016, 2020-2021  (c)  No rights reserved ]]--
 
-local VER = '1.2a'
+local VER = '1.2b'
 
 local unicode = require('unicode')
 local len=unicode.len
@@ -366,7 +366,8 @@ local function Dialog(cl,Lines,Str,But)
       local S=Str
       if len(S)>W-4 then S='..'..sub(S,-W+6) end
       gpu.set(x+2, y+H-3, string.rep(' ',W-4))
-      term.setCursor(x+2, y+H-3)  term.write(S)
+      term.setCursor(x+2, y+H-3) term.write(S)
+      if term.getCursor() > x+W-3 then term.setCursor(x+W-3, y+H-3) end
       SetColor(cl)
     end
     local evt
@@ -438,7 +439,10 @@ local function CopyMove(action,func)
   cmd=Active.Path..'/'..cmd
   local Ok,Name=Dialog(WindowCl,{action,cmd,locale.To},Name,{locale.Ok,locale.Cancel})
   if Ok==locale.Ok then
-    if cmd:sub(-2) == '..' then
+    if Name == '' then
+      pc.beep(1000)
+      Dialog(AlarmWinCl,{locale.StrEmpty})
+    elseif cmd:sub(-2) == '..' then
       pc.beep(1000)
       Dialog(AlarmWinCl,{locale.CpParDir})
     elseif cmd==Name then
