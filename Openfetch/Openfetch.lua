@@ -1,9 +1,8 @@
--- openfetch 1.3 | by ethernalsteve & Bs0Dd
+-- openfetch 1.4 | by ethernalsteve & Bs0Dd
 
 local component = require("component")
 local computer = require("computer")
 local fs = require("filesystem")
-local term = require("term")
 local gpu = component.gpu
 
 local logos = {
@@ -89,7 +88,9 @@ local function getModel(desc)
 end
 
 local function getOS()
-    if fs.exists("/lib/core") then
+    if fs.exists("OS.lua") then
+        return "MineOS"
+    elseif fs.exists("/lib/core") then
         return "OpenOS"
     elseif fs.exists("/root") then
         return "Plan9k"
@@ -157,8 +158,8 @@ end
 
 gpu.setResolution(w, h)
 addCharacteristics()
-gpu.fill(1, 1, w, h, " ")
-term.setCursor(1, #logo + 2 > 14 and #logo + 2 or 14)
+gpu.setBackground(0x000000)
+gpu.fill(1, 1, w, h, " ") 
 
 for i = 1, #logo do
     local logoLine, tmp, f = {}, {}, false
@@ -170,6 +171,8 @@ for i = 1, #logo do
             else
                 if string.match(logoLine[ii], ":") then
                     gpu.setForeground(0xffffff)
+                elseif getOS() == "MineOS" then
+                    gpu.setForeground(0x32e3de)
                 elseif getOS() == "OpenOS" then
                     gpu.setForeground(0x30ff80)
                 elseif getOS() == "Plan9k" then
@@ -179,7 +182,9 @@ for i = 1, #logo do
             end
         else
             if logoLine[ii] == "%" then
-                if getOS() == "OpenOS" then
+                if getOS() == "MineOS" then
+                    gpu.setForeground(0x35ffff)
+                elseif getOS() == "OpenOS" then
                     gpu.setForeground(0x228822)
                 elseif getOS() == "Plan9k" then
                     gpu.setForeground(0xff0000)
@@ -206,3 +211,10 @@ end
 
 drawPalette()
 
+if getOS() == "MineOS" then
+  gpu.set(1, #logo + 2 > 14 and #logo + 2 or 14, 'Press any key to exit.')
+  local evtype
+  while evtype ~= 'key_down' do
+    evtype = computer.pullSignal()
+  end
+else require("term").setCursor(1, #logo + 2 > 14 and #logo + 2 or 14) end
