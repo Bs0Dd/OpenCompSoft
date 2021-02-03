@@ -100,6 +100,27 @@ local function remdir(fil, fat, seg)
 	return true
 end
 
+local function findblock(blocks, pos)
+	local i = 0
+	local bsiz = 0
+	while i < #blocks do
+		i = i+1
+		local psiz = bsiz
+		bsiz = bsiz + (blocks[i][2] - blocks[i][1])
+		if psiz <= pos and bsiz >= pos then return i end
+	end
+	return false
+end
+
+local function blockssiz(fb, lb, fil)
+	local bsiz = 0
+	while fb <= lb do
+		bsiz = bsiz + (fil[3][fb][2] - fil[3][fb][1])
+		fb = fb+1
+	end
+	return bsiz
+end
+
 local function custsr(a, b)
 	if a[1] < b[1] then return true
 	else return false end
@@ -210,24 +231,56 @@ function tapfat.proxy(address)
 	end
 	
 	proxyObj.open = function(path,mode)
+		mode = mode or 'r'
 		checkArg(1,path,"string")
 		checkArg(2,mode,"string")
 		if not proxyObj.isReady() then return nil, 'Device is not ready' end
-		if path ~= "data.raw" or not component.invoke(address, "isReady") then
-			return nil, "file not found"
-		end
+		local descrpt
+		local fat = proxyObj.getTable()
+		local seg = fs.segments(path)
 		if mode ~= "r" and mode ~= "rb" and mode ~= "w" and mode ~= "wb" and mode ~= "a" and mode ~= "ab" then
 			error("unsupported mode",2)
 		end
-		while true do
-			local rnddescrpt = math.random(1000000000,9999999999)
-			if filedescript[rnddescrpt] == nil then
-				filedescript[rnddescrpt] = {
-					seek = 0,
-					mode = mode:sub(1,1) == "r" and "r" or "w"
-				}
-				return rnddescrpt
+		local work = true
+		while work do
+			descrpt = math.random(1000000000,9999999999)
+			if filedescript[descrpt] == nil then
+				if mode == "r" or mode == "rb" then
+					local fildat = getval(seg, fat[1])
+					if not fildat or fildat[1] == -1 then return nil, path end
+					filedescript[descrpt] = {
+						seek = 0,
+						mode = 'r',
+						path = seg
+					}
+				elseif mode == "w" or mode == "wb" then
+					filedescript[descrpt] = {
+						seek = 0,
+						mode = 'w',
+						path = seg
+					}
+					if not setval(seg, fat[1], {0, math.ceil(os.time()), {}}) then return false end
+				elseif mode == "a" or mode == "ab" then
+					local fildat = getval(seg, fat[1])
+					local sz
+					if not fildat or fildat[1] == -1 then
+						if not setval(seg, fat[1], {0, math.ceil(os.time()), {}}) then return false end
+						sz = 0
+					else sz = fildat[1]+1 end
+					filedescript[descrpt] = {
+						seek = sz,
+						mode = 'a',
+						path = seg
+					}
+				end
+				work = false
 			end
+		end
+		if mode == "a" or mode == "ab" or mode == "w" or mode == "wb" then
+			local res, err = proxyObj.setTable(fat)
+			if not res then return res, err else return descrpt end
+		else
+			return descrpt
 		end
 	end
 	
@@ -281,11 +334,27 @@ function tapfat.proxy(address)
 		if filedescript[fd] == nil or filedescript[fd].mode ~= "r" then
 			return nil, "bad file descriptor"
 		end
-
+		local fat = proxyObj.getTable()
+		local fil = getval(filedescript[fd].path, fat[1])
+		if not fil then filedescript[fd] = nil return nil, "bad file descriptor" end
+		if fil[1] == 0 or fil[1] < filedescript[fd].seek+1 then return nil end
+		if fil[1] >= filedescript[fd].seek+1 and fil[1] < filedescript[fd].seek+count then 
+			count = fil[1]-filedescript[fd].seek 
+		end
 		component.invoke(address, "seek", -math.huge)
-		component.invoke(address, "seek", filedescript[fd].seek)
-
-		local data = component.invoke(address, "read", count)
+		local strtbl = findblock(fil[3], filedescript[fd].seek)
+		local endbl = findblock(fil[3], filedescript[fd].seek + count)
+		if not endbl then endbl = #fil[3] end
+		component.invoke(address, "seek", fil[3][strtbl][1]+filedescript[fd].seek-blockssiz(1, strtbl-1, fil)-1)
+		local data = component.invoke(address, "read", fil[3][strtbl][2] - fil[3][strtbl][1]+1)
+		strtbl = strtbl + 1
+		while strtbl < endbl + 1 do
+			component.invoke(address, "seek", -math.huge)
+			component.invoke(address, "seek", fil[3][strtbl][1]-1)
+			data = data..component.invoke(address, "read", fil[3][strtbl][2] - fil[3][strtbl][1]+1)
+			strtbl = strtbl + 1 
+		end
+		data = data:sub(0, count)
 		filedescript[fd].seek = filedescript[fd].seek + #data
 		return data
 	end
@@ -380,19 +449,19 @@ function tapfat.proxy(address)
 	end
 	
 	proxyObj.write = function(fd,data)
-		checkArg(1,fd,"number")
-		checkArg(2,data,"string")
-		if not proxyObj.isReady() then return nil, 'Device is not ready' end
-		if filedescript[fd] == nil or filedescript[fd].mode ~= "w" then
-			return nil, "bad file descriptor"
-		end
+		-- checkArg(1,fd,"number")
+		-- checkArg(2,data,"string")
+		-- if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		-- if filedescript[fd] == nil or filedescript[fd].mode ~= "w" then
+			-- return nil, "bad file descriptor"
+		-- end
 
-		component.invoke(address, "seek", -math.huge)
-		component.invoke(address, "seek", filedescript[fd].seek)
+		-- component.invoke(address, "seek", -math.huge)
+		-- component.invoke(address, "seek", filedescript[fd].seek)
 
-		component.invoke(address, "write", data)
-		filedescript[fd].seek = filedescript[fd].seek + #data
-		return true
+		-- component.invoke(address, "write", data)
+		-- filedescript[fd].seek = filedescript[fd].seek + #data
+		-- return true
 	end
 	
 	return proxyObj
