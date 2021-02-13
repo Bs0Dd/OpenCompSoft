@@ -7,7 +7,7 @@
     
 2. Setting up Memphisto browser
     * Get browser from Pastebin by `pastebin run rVvALG19`
-    * Go to `/etc/webbrow.cfg`. There you can set:
+    * Go to `/etc/ownbrow.cfg`. There you can set:
         * `["homepage"] = "/usr/misc/Memphisto/home.nfp"`  
           Variable with path to homepage file 
         * `["download_dir"] = "/home/"`  
