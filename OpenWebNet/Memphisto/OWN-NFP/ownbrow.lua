@@ -11,7 +11,7 @@ local render = require("doubleBuffering")
 
 local vid = component.gpu
 
-local page, why, lab, conf, servs
+local page, why, lab, conf, servs, card
 local line = false
 local ocifs = {}
 local refs = {}
@@ -543,7 +543,7 @@ local function offpic()
 end
 
 
-local rawconf, why = io.open("/etc/webbrow.cfg")
+local rawconf, why = io.open("/etc/ownbrow.cfg")
 if rawconf == nil then
 	print("FATAL ERROR! Can't open config file: "..why) return end
 conf, why = seriz.unserialize(rawconf:read())
