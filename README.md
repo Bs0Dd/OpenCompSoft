@@ -8,9 +8,15 @@ Some Lua software for OpenComputers
 * `OpenWebNet` - In-world network protocol for web pages and content sharing
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
+* `NyaDraw` - Fast and functional graphic engine. Port "Screen.lua" from MineOS
+
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md)
 * `Midday Commander Plus` - NC-style file manager, fork from [original MC](https://github.com/OpenPrograms/OpenPrograms.ru/tree/master/mc)
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/MiddayCommanderPlus/README.md)
+* `TapFAT` - Filesystem for Computronics Tape.
+
+   In developing..
 * `RemoteDISK` - Network Disk server (RC daemon) and client with Driver library
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/README.md)
@@ -27,4 +33,5 @@ Some Lua software for OpenComputers
    Get : `pastebin get vrK88gNA srcreate.lua` 
 * `StorTape` - Computronics Tape data backup system, planning compression and encryption (but I too lazy)
    
-   Get : `pastebin get QjykSxTt stortape.lua`
+   Get : `pastebin get QjykSxTt stortape.lua`  
+   **ALERT** - Deprecated, TapFAT is coming...
