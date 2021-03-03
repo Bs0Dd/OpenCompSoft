@@ -1,0 +1,5 @@
+{ label= 'Page not found!',
+{ 'text', 4, 2, 0xFF0000, "DEF", "[OOPS! 404 - Page not found!]"},
+{ 'text', 1, 4, 0xFFFFFF, "DEF", "Sorry, but I can't get this page, please check if address is correct."},
+{ 'border', 1, 8, 90, 0x00FFFF, "DEF", 'dpseudo'},
+{ 'text', 1, 9, 0x00FFFF, "DEF", "Browser developing © 2020-2021 Compys S&N Systems"} }

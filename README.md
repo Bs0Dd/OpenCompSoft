@@ -5,7 +5,8 @@ Some Lua software for OpenComputers
 * `CopyTape` - Utility for copying Computronics tapes in real time (with two tape drives)
    
    Get : `pastebin get A3ki3HGg copytape.lua`
-* `OpenWebNet` - In-world network protocol for web pages and content sharing
+* `OpenWebNet` - In-world network protocol for web pages and content sharing  
+   Developing freezed
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
 * `NyaDraw` - Fast and functional graphic engine. Port "Screen.lua" from MineOS
@@ -14,6 +15,9 @@ Some Lua software for OpenComputers
 * `Midday Commander Plus` - NC-style file manager, fork from [original MC](https://github.com/OpenPrograms/OpenPrograms.ru/tree/master/mc)
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/MiddayCommanderPlus/README.md)
+* `Memphisto` - Web browser for special NFP pages
+
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/Memphisto/README.md)
 * `TapFAT` - Filesystem for Computronics Tape.
 
    In developing..

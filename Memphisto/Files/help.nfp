@@ -1,0 +1,24 @@
+{ label= 'Memphisto Help',
+{ 'text', 4, 2, 0x00FF00, "DEF", "Memphisto Help"},
+{ 'text', 1, 4, 0xFF0000, "DEF", "Keyboard shortcuts:"},
+{ 'text', 4, 5, {
+	{0xFF0000, 0x00FF00, "[F1]"},
+	{0xFFFFFF, "DEF", " - This page"}}},
+{ 'text', 4, 7, {
+	{0xFF0000, 0x00FF00, "[F3]"},
+	{0xFFFFFF, "DEF", " - Go to Homepage"}}},
+{ 'text', 4, 9, {
+	{0xFF0000, 0x00FF00, "[F4]"},
+	{0xFFFFFF, "DEF", " - Open Web page"}}},
+{ 'text', 4, 11, {
+	{0xFF0000, 0x00FF00, "[F5]"},
+	{0xFFFFFF, "DEF", " - Reload page"}}},
+{ 'text', 4, 13, {
+	{0xFF0000, 0x00FF00, "[F7]"},
+	{0xFFFFFF, "DEF", " - OFF/ON pictures drawing"}}},
+{ 'text', 4, 15, {
+	{0xFF0000, 0x00FF00, "[CTRL-C]"},
+	{0xFFFFFF, "DEF", " - Exit from application or undo address bar input"}}},
+{ 'image', 60, 5, "../keys.pic"},
+{ 'border', 1, 19, 90, 0x00FFFF, "DEF", 'dpseudo'},
+{ 'text', 1, 20, 0x00FFFF, "DEF", "Browser developing © 2020-2021 Compys S&N Systems"} }

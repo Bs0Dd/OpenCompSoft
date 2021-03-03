@@ -1,0 +1,5 @@
+{ label= 'Unknown response!',
+{ 'text', 4, 2, 0xFF0000, "DEF", "[OOPS! Received unknown response!]"},
+{ 'text', 1, 4, 0xFFFFFF, "DEF", "Sorry, but server conveyed unknown response (not \"200 OK\"), please check if page is exists."},
+{ 'border', 1, 8, 90, 0x00FFFF, "DEF", 'dpseudo'},
+{ 'text', 1, 9, 0x00FFFF, "DEF", "Browser developing © 2020-2021 Compys S&N Systems"} }
