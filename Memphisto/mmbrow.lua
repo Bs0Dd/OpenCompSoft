@@ -189,7 +189,7 @@ local function drawpage(rx, ry, sbk, frscr)
 	while pos ~= #page do
 		pos= pos+1
 		page[pos][1] = string.lower(page[pos][1])
-		if page[pos][1] == 'text' or page[pos][1] == 'hyperlink' or page[pos][1] == 'download' then
+		if page[pos][1] == 'text' or page[pos][1] == 'link' or page[pos][1] == 'dlink' then
 			local x, y, dat, trs, tcol = page[pos][2], page[pos][3]
 			if type(page[pos][4]) == "table" then
 				for _, block in pairs(page[pos][4]) do
@@ -213,9 +213,9 @@ local function drawpage(rx, ry, sbk, frscr)
 				x = x+unicode.len(page[pos][6])
 				dat = page[pos][7]
 			end
-			if page[pos][1] == 'hyperlink' then
+			if page[pos][1] == 'link' then
 				table.insert(refs, {page[pos][2]+rx, rx+x, y+ry, dat})
-			elseif page[pos][1] == 'download' then
+			elseif page[pos][1] == 'dlink' then
 				table.insert(dwrefs, {page[pos][2]+rx, rx+x, y+ry, dat})
 			end
 		elseif page[pos][1] == 'image' then
