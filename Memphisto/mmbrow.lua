@@ -8,6 +8,7 @@ local fs = require("filesystem")
 local ev = require("event")
 local unicode = require("unicode")
 local render = require('NyaDrMini')
+local sh = require('shell')
 
 local vid = component.gpu
 
@@ -23,6 +24,7 @@ local rx = 0
 local ry = 0
 
 local mx, my = vid.getResolution()
+local args = sh.parse(...)
 	
 print("Memphisto NFPL Browser v".._VER_)
 print("Developing © 2020-2021 Compys S&N Systems")
@@ -83,7 +85,25 @@ local function goerr(mode)
 	rawpage:close()
 end 
 
-local function drawocif(kx, ky, ptox)
+local function drawocif(kx, ky, ptox, elm)
+	local function lerr(text, kx, ky, elm)
+		if elm[1] == 'ilink' then
+			render.drawText(kx, ky, 0xFF0000, "IMGLINK: "..text)
+			table.insert(refs, {elm[5], kx, kx+unicode.len("LINK: "..text), ky})
+		elseif elm[1] == 'idlink' then
+			render.drawText(kx, ky, 0xFF0000, "IMDWLINK: "..text)
+			table.insert(dwrefs, {elm[5], kx, kx+unicode.len("DWLINK: "..text), ky})
+		else
+			render.drawText(kx, ky, 0xFF0000, "PICTURE: "..text)
+		end
+	end
+	local function addref(pic, elm, kx, ky)
+		if elm[1] == 'ilink' then
+			table.insert(refs, {elm[5], kx, kx+pic[1], ky, ky+pic[2]})
+		elseif elm[1] == 'idlink' then
+			table.insert(dwrefs, {elm[5], kx, kx+pic[1], ky, ky+pic[2]})
+		end
+	end
 	if padd ~= lpadd then ocifs = {} lpadd = padd end
 	local parts = split(ptox, "/")
 	if parts[1] == ".." then
@@ -102,13 +122,14 @@ local function drawocif(kx, ky, ptox)
 		end
 	end
 	if picrnd == false then
-		render.drawText(kx, ky, 0xFF0000, "PICTURE: "..ptox)
+		lerr(ptox, kx, ky, elm)
 		return
 	end
 	local parts = split(ptox, "/")
 	if parts[1] ~= "file:" then
 		if ocifs[ptox] ~= nil then
 			render.drawImage(kx, ky, ocifs[ptox])
+			addref(ocifs[ptox], elm, kx, ky)
 		else
 			local card
 			if component.list("internet")() == nil then 
@@ -128,8 +149,7 @@ local function drawocif(kx, ky, ptox)
 			end
 			local mess = req.response()
 			if mess == nil then
-				render.drawText(kx, ky, 
-				 0xFF0000, "ERROR: Picture not found on server")
+				lerr("Picture not found on server", kx, ky, elm)
 				return
 			elseif mess == 200 then
 				if not fs.isDirectory('/usr/misc/Memphisto/.cached/') then 
@@ -146,9 +166,9 @@ local function drawocif(kx, ky, ptox)
 				fs.remove('/usr/misc/Memphisto/.cached/'..parts[#parts])
 				if ocifs[ptox] == nil then ocifs[ptox] = pic end
 				render.drawImage(kx, ky, pic)
+				addref(pic, elm, kx, ky)
 			else
-				render.drawText(kx, ky, 
-				 0xFF0000, "ERROR: Unknown response")
+				lerr("Unknown response", kx, ky, elm)
 				return
 			end
 		end
@@ -157,21 +177,21 @@ local function drawocif(kx, ky, ptox)
 		ptox = '/'..restore(parts)
 		if ocifs[ptox] ~= nil then
 			render.drawImage(kx, ky, ocifs[ptox])
+			addref(ocifs[ptox], elm, kx, ky)
 			return
 		end
 		local pic, why = render.loadImage(ptox)
 		if pic == false then
 			if why ~= nil then
-				render.drawText(kx, ky, 
-				 0xFF0000, "ERROR: Can't load picture: "..why)
+				lerr("Can't load picture: "..why, kx, ky, elm)
 			else
-				render.drawText(kx, ky, 
-				 0xFF0000, "ERROR: Can't load picture: unknown reason")
+				lerr("Can't load picture: unknown reason", kx, ky, elm)
 			end
 			return
 		end
 		if ocifs[ptox] == nil then ocifs[ptox] = pic end
 		render.drawImage(kx, ky, pic)
+		addref(pic, elm, kx, ky)
 	end
 end
 
@@ -214,12 +234,12 @@ local function drawpage(rx, ry, sbk, frscr)
 				dat = page[pos][7]
 			end
 			if page[pos][1] == 'link' then
-				table.insert(refs, {page[pos][2]+rx, rx+x, y+ry, dat})
+				table.insert(refs, {dat, page[pos][2]+rx, x+rx-1, y+ry})
 			elseif page[pos][1] == 'dlink' then
-				table.insert(dwrefs, {page[pos][2]+rx, rx+x, y+ry, dat})
+				table.insert(dwrefs, {dat, page[pos][2]+rx, x+rx-1, y+ry})
 			end
-		elseif page[pos][1] == 'image' then
-			drawocif(page[pos][2]+rx, page[pos][3]+ry, page[pos][4])
+		elseif page[pos][1] == 'image' or page[pos][1] == 'ilink' or page[pos][1] == 'idlink' then
+			drawocif(page[pos][2]+rx, page[pos][3]+ry, page[pos][4], page[pos])
 		elseif page[pos][1] == 'rectangle' or page[pos][1] == 'line' or page[pos][1] == 'ellipse' then
 			local lry, crx, cry, drawer, fcol, bcol = ry, page[pos][4], page[pos][5]
 			if page[pos][1] == 'rectangle' then 
@@ -326,7 +346,7 @@ local function drawpage(rx, ry, sbk, frscr)
 			render.semiPixelSet(page[pos][2]+rx, page[pos][3]+ry, fcol)
 		end
 	end
-	if conf.showram then
+	if conf.showRam then
 		local free = computer.freeMemory()
 		render.drawRectangle(mx-#tostring(free), 1, #tostring(free), 1, 0xFFFFFF, 0x000000, ' ')
 		render.drawText(mx-#tostring(free), 1, 0x000000, free)
@@ -457,7 +477,6 @@ local function openpage(inp)
 		return 
 	else
 		line = false
-		drawplate(padd, line, 'Loading...')
 		table.remove(parts, 1)
 		padd = inp
 		inp = '/'..restore(parts)
@@ -499,7 +518,7 @@ local function enterurl()
   			else
     			inp = inp..unicode.char(key)
     			end
-		elseif eve == "interrupted" then return page
+		elseif eve == "interrupted" then return
 		elseif eve == "clipboard" then 
 			inp = inp..key
 		end
@@ -507,17 +526,17 @@ local function enterurl()
 end
 
 local function gohome()
-	padd = conf["homepage"]
-	openpage(padd)
 	rx = 0
 	ry = 0
+	padd = conf.homepage
+	openpage(padd)
 end
 
 local function helpmepls()
-	padd = 'file://usr/misc/Memphisto/help.nfp'
-	openpage(padd)
 	rx = 0
 	ry = 0
+	padd = 'file://usr/misc/Memphisto/help.nfp'
+	openpage(padd)
 end
 
 local function reload()
@@ -528,18 +547,14 @@ local function reload()
 end
 
 local function paradraw()
-	if clcor == true then
-		rx = 0
-		ry = 0
-	end
-	drawpage(rx, ry, conf["std_backg"])
+	drawpage(rx, ry, conf.background)
 	drawplate(padd, line, lab)
 end
 
 local function download(dwp)
 	local _, mess, mess2, key
 	term.clear()
-	render.clear(conf["std_backg"])
+	render.clear(conf.background)
 	render.update()
 	drawplate(padd, line, lab)
 	local parts = split(dwp, "/")
@@ -578,7 +593,7 @@ local function download(dwp)
 			prac()
 			return
 		elseif mess == 200 then
-			local savto = fs.concat(conf.download_dir, parts[#parts])
+			local savto = fs.concat(conf.downloadDir, parts[#parts])
 			local sav = io.open(savto, 'wb')
 			local data = ''
 			while data ~= nil do
@@ -605,7 +620,7 @@ local function download(dwp)
 			elseif key == 49 then return end
 		end
 		print("Downloading file...")
-		local savto = fs.concat(conf.download_dir, parts[#parts])
+		local savto = fs.concat(conf.downloadDir, parts[#parts])
 		local sav = io.open(savto, 'wb')
 		local rded = fil:read()
 		while rded ~= nil do
@@ -623,17 +638,20 @@ end
 local function clickop(kx, ky)
 	if #refs ~= 0 or #dwrefs ~= 0 then
 		for _, ref in pairs(refs) do
-			if ky == ref[3] and ref[1] <= kx and kx <= ref[2]-1 then
-				openpage(ref[4])
+			local sec = ref[5] or ref[4]
+			if ref[4] <= ky and ky < sec and ref[2] <= kx and kx < ref[3] then
+				openpage(ref[1])
 				rx=0
 				ry=0
-				drawpage(rx, ry, conf["std_backg"])
+				drawpage(rx, ry, conf.background)
 				drawplate(padd, line, lab)
+				return
 			end
 		end
 		for _, dref in pairs(dwrefs) do
-			if ky == dref[3] and dref[1] <= kx and kx <= dref[2]-1 then
-				download(dref[4])
+			local sec = dref[5] or dref[4]
+			if dref[4] <= ky and ky < sec and dref[2] <= kx and kx < dref[3] then
+				download(dref[1])
 				return
 			end
 		end
@@ -654,9 +672,9 @@ conf, why = seriz.unserialize(rawconf:read("*a"))
 rawconf:close()
 if conf == nil then
 	print("FATAL ERROR! Can't handle config file: "..why) return end
-padd = conf["homepage"]
-openpage(padd, true)
-drawpage(rx, ry, conf["std_backg"])
+padd = args[1] or conf.homepage
+openpage(padd)
+drawpage(rx, ry, conf.background)
 drawplate(padd, line, lab)
 
 while true do
