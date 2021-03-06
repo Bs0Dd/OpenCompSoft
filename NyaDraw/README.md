@@ -191,7 +191,7 @@ engine.**drawText**( x, y, color, text, transparency )
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Text coordinate by x-axis |
-| *int* | y | Text coordinate by y-axis|
+| *int* | y | Text coordinate by y-axis |
 | *int* | foreground | Text color |
 | *string* | text | Text |
 | [*float* [0.0; 1.0] | transparency] | Optional text transparency |
@@ -203,7 +203,7 @@ engine.**drawImage**( x, y, picture )
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Image coordinate by x-axis |
-| *int* | y | Image coordinate by y-axis|
+| *int* | y | Image coordinate by y-axis |
 | *table* | picture | Loaded image |
 
 Draw image that was loaded earlier via engine.**loadImage**(...) method. The alpha channel of image is also supported.
@@ -227,9 +227,9 @@ engine.**drawEllipse**( centerX, centerY, radiusX, radiusY, background, foregrou
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | centerX | Ellipse middle point by x-axis |
-| *int* | centerY | Ellipse middle point by x-axis |
+| *int* | centerY | Ellipse middle point by y-axis |
 | *int* | radiusX | Ellipse radius by x-axis |
-| *int* | radiusY | Ellipse radius by x-axis |
+| *int* | radiusY | Ellipse radius by y-axis |
 | *int* | background | Ellipse background color |
 | *int* | foreground | Ellipse foreground color |
 | *string* | symbol | Ellipse symbol |
@@ -279,9 +279,9 @@ engine.**drawSemiPixelEllipse**( centerX, centerY, radiusX, radiusY, color )
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | centerX | Ellipse middle point by x-axis |
-| *int* | centerY | Ellipse middle point by x-axis |
+| *int* | centerY | Ellipse middle point by y-axis |
 | *int* | radiusX | Ellipse radius by x-axis |
-| *int* | radiusY | Ellipse radius by x-axis |
+| *int* | radiusY | Ellipse radius by y-axis |
 | *int* | color | Ellipse color |
 
 Draw semi-pixel ellipse with specified color.
