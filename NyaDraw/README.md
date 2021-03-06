@@ -217,7 +217,7 @@ engine.**drawLine**( x1, y1, x2, y2, background, foreground, symbol )
 | *int* | x2 | Second point coordinate by x-axis |
 | *int* | y2 | Second point coordinate by y-axis |
 | *int* | background | Line background color |
-| *int* | foreground | Line background color |
+| *int* | foreground | Line foreground color |
 | *string* | symbol | Line symbol |
 
 Draw a line with specified pixel data from first point to second.
@@ -231,7 +231,7 @@ engine.**drawEllipse**( centerX, centerY, radiusX, radiusY, background, foregrou
 | *int* | radiusX | Ellipse radius by x-axis |
 | *int* | radiusY | Ellipse radius by x-axis |
 | *int* | background | Ellipse background color |
-| *int* | foreground | Ellipse background color |
+| *int* | foreground | Ellipse foreground color |
 | *string* | symbol | Ellipse symbol |
 
 Draw ellipse with specified pixel data.
