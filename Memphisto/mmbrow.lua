@@ -685,6 +685,8 @@ while true do
 		elseif key == 63 then reload() paradraw()
 		elseif key == 65 then offpic() paradraw() end
 	elseif eve == "interrupted" then
+		vid.setBackground(0x000000)
+		vid.setForeground(0xFFFFFF)
 		term.clear()
 		print("Thanks for using Memphisto!\n")
 		os.exit()
