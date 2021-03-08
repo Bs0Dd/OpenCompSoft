@@ -351,28 +351,24 @@ local function drawpage(rx, ry, sbk, frscr)
 		render.drawRectangle(mx-#tostring(free), 1, #tostring(free), 1, 0xFFFFFF, 0x000000, ' ')
 		render.drawText(mx-#tostring(free), 1, 0x000000, free)
 	end
-	render.update()
 end
 
 local function drawplate(pnam, ofon, lab)
-	vid.setForeground(0x000000)
-  	vid.setBackground(0xFFFFFF)
-  	vid.fill(1,my,mx,1, " ")
-  	vid.set(2, my, "Memphisto NFPL Browser v".._VER_)
+  	render.drawLine(1,my,mx,my, 0xFFFFFF, 0x000000, ' ')
+  	render.drawText(2, my, 0x000000, "Memphisto NFPL Browser v".._VER_)
   	tform = ''
   	if lab ~= nil and lab ~= '' then tform = ' - '..lab end
 	local text = pnam..tform
 	if unicode.len(text) > mx-51 then text = '..'..unicode.sub(text,-(mx-53)) end
-  	vid.set(36, my, "Page: "..text)
+  	render.drawText(36, my, 0x000000, "Page: "..text)
   	if ofon == true then
-  		vid.setBackground(0x00FF00)
-  		vid.set(mx-7, my, "ON-LINE")
+  		render.drawRectangle(mx-7, my, 7, 1, 0x00FF00)
+  		render.drawText(mx-7, my, 0x000000, "ON-LINE")
   	else
-  		vid.setBackground(0xFF0000)
-  		vid.set(mx-8, my, "OFF-LINE")
+  		render.drawRectangle(mx-8, my, 8, 1, 0xFF0000)
+  		render.drawText(mx-8, my, 0x000000, "OFF-LINE")
   	end
-  	vid.setBackground(0x000000)
-  	vid.setForeground(0xFFFFFF)
+	render.update()
 end
 
 local function waitansw(request)
@@ -497,9 +493,8 @@ local function openpage(inp)
 end
 
 local function enterurl()
-	vid.setBackground(0x5A5A5A)
-	vid.setForeground(0x000000)
-	vid.fill(42, my, mx-51, 1, " ")
+	render.drawLine(42, my, mx-10, my, 0x5A5A5A, 0x000000, ' ')
+	render.update()
 	local inp = padd
 	local see
 	while true do
