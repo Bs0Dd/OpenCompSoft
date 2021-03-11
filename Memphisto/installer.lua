@@ -67,14 +67,27 @@ local files = {
 		path = "/usr/misc/Memphisto/keys.pic"
 	},
 	{
-		url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/Memphisto/Files/mmbrow.cfg",
-		path = "/etc/mmbrow.cfg"
-	},
-	{
 		url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/Memphisto/mmbrow.lua",
 		path = "/usr/bin/mmbrow.lua"
 	},
 }
+
+if gpu.maxDepth() < 4 then
+	print('Your video system is incompatible with the program, please install a card and monitor of Tier 2 or higher')
+	return
+end
+
+local cfg = io.open('/etc/mmbrow.cfg', 'w')
+fs.makeDirectory('/home/Downloads')
+local body = '{homepage = "file://usr/misc/Memphisto/home.nfp",\ndownloadDir = "/home/Downloads",\n'
+if gpu.maxDepth() == 4 then
+	body = body..'background = 0x333333,'
+else
+	body = body..'background = 0x878787,'
+end
+body = body..'\nshowRam = false}'
+cfg:write(body)
+cfg:close()
 
 local properties = {
 	windowWidth = 56,
@@ -86,30 +99,8 @@ local properties = {
 		finished1 = "Memphisto has been successfully installed",
 		finished2 = "Type in console \"mmbrow\" to run it",
 		finished3 = "Press any key to quit",
-	}
-}
-
-if gpu.maxResolution() < 80 then
-    properties.windowWidth = 48
-    properties.windowX = 2
-    properties.colors = {
-        window = {
-            background = 1,
-            text = 0,
-            shadow = 0
-        },
-        title = {
-            background = 0,
-            text = 1,
-        },
-        progressBar = {
-            active = 0,
-            passive = 1
-        }
-    }
-else
-    properties.windowWidth = 56
-    properties.colors = {
+	},
+	colors = {
         window = {
             background = 0xEEEEEE,
             text = 0x999999,
@@ -124,7 +115,7 @@ else
             passive = 0xCCCCCC
         }
     }
-end
+}
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
