@@ -18,7 +18,7 @@ NFPL web browser for OpenComputers.
 + Internet Card.
 
 ## How to get started 
-1. Install browser by command `pastebin run x`.
+1. Install browser by command `pastebin run EUZQRkwF`.
 2. Open file `/etc/mmbrow.cfg`.  
    There you can set:
    + `homepage` - path to "Home" page, it may be remote.
