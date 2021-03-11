@@ -89,10 +89,10 @@ local function drawocif(kx, ky, ptox, elm)
 	local function lerr(text, kx, ky, elm)
 		if elm[1] == 'ilink' then
 			render.drawText(kx, ky, 0xFF0000, "IMGLINK: "..text)
-			table.insert(refs, {elm[5], kx, kx+unicode.len("LINK: "..text), ky})
+			table.insert(refs, {elm[5], kx, kx+unicode.len("LINK: "..text)+3, ky})
 		elseif elm[1] == 'idlink' then
 			render.drawText(kx, ky, 0xFF0000, "IMDWLINK: "..text)
-			table.insert(dwrefs, {elm[5], kx, kx+unicode.len("DWLINK: "..text), ky})
+			table.insert(dwrefs, {elm[5], kx, kx+unicode.len("DWLINK: "..text)+3, ky})
 		else
 			render.drawText(kx, ky, 0xFF0000, "PICTURE: "..text)
 		end
@@ -234,9 +234,9 @@ local function drawpage(rx, ry, sbk, frscr)
 				dat = page[pos][7]
 			end
 			if page[pos][1] == 'link' then
-				table.insert(refs, {dat, page[pos][2]+rx, x+rx-1, y+ry})
+				table.insert(refs, {dat, page[pos][2]+rx, x+rx, y+ry})
 			elseif page[pos][1] == 'dlink' then
-				table.insert(dwrefs, {dat, page[pos][2]+rx, x+rx-1, y+ry})
+				table.insert(dwrefs, {dat, page[pos][2]+rx, x+rx, y+ry})
 			end
 		elseif page[pos][1] == 'image' or page[pos][1] == 'ilink' or page[pos][1] == 'idlink' then
 			drawocif(page[pos][2]+rx, page[pos][3]+ry, page[pos][4], page[pos])
@@ -346,7 +346,7 @@ local function drawpage(rx, ry, sbk, frscr)
 			render.semiPixelSet(page[pos][2]+rx, page[pos][3]+ry, fcol)
 		end
 	end
-	if conf.showRam then
+	if conf.showMem then
 		local free = computer.freeMemory()
 		render.drawRectangle(mx-#tostring(free), 1, #tostring(free), 1, 0xFFFFFF, 0x000000, ' ')
 		render.drawText(mx-#tostring(free), 1, 0x000000, free)
@@ -633,7 +633,7 @@ end
 local function clickop(kx, ky)
 	if #refs ~= 0 or #dwrefs ~= 0 then
 		for _, ref in pairs(refs) do
-			local sec = ref[5] or ref[4]
+			local sec = ref[5] or ref[4]+1
 			if ref[4] <= ky and ky < sec and ref[2] <= kx and kx < ref[3] then
 				openpage(ref[1])
 				rx=0
@@ -644,7 +644,7 @@ local function clickop(kx, ky)
 			end
 		end
 		for _, dref in pairs(dwrefs) do
-			local sec = dref[5] or dref[4]
+			local sec = dref[5] or dref[4]+1
 			if dref[4] <= ky and ky < sec and dref[2] <= kx and kx < dref[3] then
 				download(dref[1])
 				return
