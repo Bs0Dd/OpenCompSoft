@@ -653,11 +653,6 @@ local function clickop(kx, ky)
 	end
 end
 
-local function offpic()
-	if picrnd == true then picrnd = false
-	else picrnd = true end
-end
-
 render.clear(0)
 render.update()
 local rawconf, why = io.open("/etc/mmbrow.cfg")
@@ -683,7 +678,7 @@ while true do
 		elseif key == 62 then enterurl() paradraw()
 		elseif key == 59 then helpmepls() paradraw()
 		elseif key == 63 then reload() paradraw()
-		elseif key == 65 then offpic() paradraw() end
+		elseif key == 65 then picrnd = not picrnd paradraw() end
 	elseif eve == "interrupted" then
 		vid.setBackground(0x000000)
 		vid.setForeground(0xFFFFFF)
