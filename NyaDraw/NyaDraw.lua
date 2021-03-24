@@ -1,4 +1,4 @@
---[[NyaDraw Graphic Engine v1.01 for OpenOS
+--[[NyaDraw Graphic Engine v1.02 for OpenOS
 	Standalone "Screen.lua" port from MineOS
 	More info on: https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md
 	2015-2021 - ECS: https://github.com/IgorTimofeev
@@ -156,7 +156,7 @@ Loader[5] = function(file, picture)
 	picture[1] = readBytes(file, 2)
 	picture[2] = readBytes(file, 2)
 
-	for i = 1, image.getWidth(picture) * image.getHeight(picture) do
+	for i = 1, picture[1] * picture[2] do
 		table.insert(picture, to24Bit(string.byte(file:read(1))))
 		table.insert(picture, to24Bit(string.byte(file:read(1))))
 		table.insert(picture, string.byte(file:read(1)) / 255)
