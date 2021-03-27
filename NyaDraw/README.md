@@ -93,7 +93,7 @@ engine.**loadImage**( path ): *table* picture
 | ------ | ------ | ------ |
 | *string* | path | Path to the picture to be loaded |
 
-Loads a OCIF picture at the specified path and returns it as a table for, for example, drawing through engine.**drawImage**(...). Supports OCIF5 and OCIF6 formats.
+Loads a OCIF picture at the specified path and returns it as a table for, for example, drawing through engine.**drawImage**(...). Supports OCIF5, OCIF6 and OCIF7 formats.
 
 ### Rendering methods
 

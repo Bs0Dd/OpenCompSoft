@@ -1,4 +1,4 @@
---[[NyaDraw Graphic Engine v1.02 for OpenOS
+--[[NyaDraw Graphic Engine v1.03 for OpenOS
 	Standalone "Screen.lua" port from MineOS
 	More info on: https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md
 	2015-2021 - ECS: https://github.com/IgorTimofeev
@@ -146,7 +146,6 @@ end
 local function iset(picture, x, y, background, foreground, alpha, symbol)
 	local index = 4 * (picture[1] * (y - 1) + x) - 1
 	picture[index], picture[index + 1], picture[index + 2], picture[index + 3] = background, foreground, alpha, symbol
-
 	return picture
 end
 
@@ -155,7 +154,6 @@ local Loader = {}
 Loader[5] = function(file, picture)
 	picture[1] = readBytes(file, 2)
 	picture[2] = readBytes(file, 2)
-
 	for i = 1, picture[1] * picture[2] do
 		table.insert(picture, to24Bit(string.byte(file:read(1))))
 		table.insert(picture, to24Bit(string.byte(file:read(1))))
@@ -186,6 +184,38 @@ Loader[6] = function(file, picture)
 						currentY = string.byte(file:read(1))
 						xSize = string.byte(file:read(1))
 						for x = 1, xSize do
+							iset(
+								picture,
+								string.byte(file:read(1)),
+								currentY,
+								currentBackground,
+								currentForeground,
+								currentAlpha,
+								currentSymbol
+							)
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+Loader[7] = function(file, picture)
+	picture[1] = string.byte(file:read(1))
+	picture[2] = string.byte(file:read(1))
+	local currentAlpha, currentSymbol, currentBackground, currentForeground, currentY
+	for alpha = 1, string.byte(file:read(1)) + 1 do
+		currentAlpha = string.byte(file:read(1)) / 255
+		for symbol = 1, string.byte(file:read(2)) + 1 do
+			currentSymbol = readUnicodeChar(file)
+			for background = 1, string.byte(file:read(1)) + 1 do
+				currentBackground = to24Bit(string.byte(file:read(1)))
+				for foreground = 1, string.byte(file:read(1)) + 1 do
+					currentForeground = to24Bit(string.byte(file:read(1)))
+					for y = 1, string.byte(file:read(1)) + 1 do
+						currentY = string.byte(file:read(1))
+						for x = 1, string.byte(file:read(1)) + 1 do
 							iset(
 								picture,
 								string.byte(file:read(1)),
