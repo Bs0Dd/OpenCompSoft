@@ -26,9 +26,7 @@ Some Lua software for OpenComputers
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/README.md)
 * `SecuCODEX` - Code Door system with fingerprint scanner, working without OpenOS
    
-   Get Color Edition (FOR TIER 2 or 3 VIDEO) : `pastebin get jJWDicaJ init.lua`
-   
-   Get Mono Edition (FOR TIER 1 VIDEO) : `pastebin get ahbjHpvV init.lua`
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/SecuCODEX/README.md)
 * `SecuDRIVE` - Disk access system (tape or floppy), Creator making EEPROM with program and settings
    
    Get : `pastebin get eYu7ndgB sdcreate.lua`
