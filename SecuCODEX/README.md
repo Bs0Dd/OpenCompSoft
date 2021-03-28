@@ -1,11 +1,10 @@
 # SecuCODEX EEPROM
 
-EEPROM Program-system for password and "fingerprint" based access computer system
-Author: Bs()Dd
-
-Idea and base interface concept borrowed from ECS's CodeDoor
-
+EEPROM Program-system for password and "fingerprint" based access computer system  
 Program-system working without OpenOS, because "hackers" can't kill it by CTRL+ALT+C
+
+Idea and base interface concept borrowed from ECS's CodeDoor  
+Author: [Bs()Dd](https://github.com/Bs0Dd)
 
 **ATTENTION!!! To work, you need to switch the processor to Lua 5.3 mode (RMB on the processor in hand).**
 
@@ -28,8 +27,8 @@ Minimal requirements for Color Edition:
 Install Tier 3 Computer, Video Card and Monitor to set 256 color mode in program
 
 Installing:
- 1. Download creator
-    `pastebin run `  
+ 1. Download creator  
+    `pastebin run cHENmYbV`  
  2. Follow the instructions
  3. Insert EEPROM to access computer system and turn it
  4. Make first Setup
