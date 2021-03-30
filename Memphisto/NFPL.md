@@ -83,7 +83,7 @@ Looks like text object but starts file downloading on click.
 | *int* | y | Y coordinate |
 | *string* | picpath | Path to picture |  
 
-Supports only OCIF5 and OCIF6 pictures.  
+Supports only OCIF5, OCIF6 and OCIF7 pictures.  
 Converter is [here](https://github.com/IgorTimofeev/OCIFImageConverter).
 
 ![Images demo](https://i.imgur.com/aDfnjtb.png) 
