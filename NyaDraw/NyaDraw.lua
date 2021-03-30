@@ -1,4 +1,4 @@
---[[NyaDraw Graphic Engine v1.03 for OpenOS
+--[[NyaDraw Graphic Engine v1.04 for OpenOS
 	Standalone "Screen.lua" port from MineOS
 	More info on: https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md
 	2015-2021 - ECS: https://github.com/IgorTimofeev
@@ -149,6 +149,38 @@ local function iset(picture, x, y, background, foreground, alpha, symbol)
 	return picture
 end
 
+local function multiLoad(file, picture, mode) --MultiLoader for OCIF6 and OCIF7. Set mode = 0 to OCIF6, mode = 1 to OCIF7.
+	picture[1] = string.byte(file:read(1))
+	picture[2] = string.byte(file:read(1))
+	local currentAlpha, currentSymbol, currentBackground, currentForeground, currentY
+	for alpha = 1, string.byte(file:read(1)) + mode do
+		currentAlpha = string.byte(file:read(1)) / 255
+		for symbol = 1, readBytes(file, 2) + mode do
+			currentSymbol = readUnicodeChar(file)
+			for background = 1, string.byte(file:read(1)) + mode do
+				currentBackground = to24Bit(string.byte(file:read(1)))
+				for foreground = 1, string.byte(file:read(1)) + mode do
+					currentForeground = to24Bit(string.byte(file:read(1)))
+					for y = 1, string.byte(file:read(1)) + mode do
+						currentY = string.byte(file:read(1))
+						for x = 1, string.byte(file:read(1)) + mode do
+							iset(
+								picture,
+								string.byte(file:read(1)),
+								currentY,
+								currentBackground,
+								currentForeground,
+								currentAlpha,
+								currentSymbol
+							)
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
 local Loader = {}
 
 Loader[5] = function(file, picture)
@@ -163,74 +195,11 @@ Loader[5] = function(file, picture)
 end
 
 Loader[6] = function(file, picture)
-	picture[1] = string.byte(file:read(1))
-	picture[2] = string.byte(file:read(1))
-	local currentAlpha, currentSymbol, currentBackground, currentForeground, currentY
-	local alphaSize, symbolSize, backgroundSize, foregroundSize, ySize, xSize
-	alphaSize = string.byte(file:read(1))
-	for alpha = 1, alphaSize do
-		currentAlpha = string.byte(file:read(1)) / 255
-		symbolSize = readBytes(file, 2)
-		for symbol = 1, symbolSize do
-			currentSymbol = readUnicodeChar(file)
-			backgroundSize = string.byte(file:read(1))
-			for background = 1, backgroundSize do
-				currentBackground = to24Bit(string.byte(file:read(1)))
-				foregroundSize = string.byte(file:read(1))
-				for foreground = 1, foregroundSize do
-					currentForeground = to24Bit(string.byte(file:read(1)))
-					ySize = string.byte(file:read(1))
-					for y = 1, ySize do
-						currentY = string.byte(file:read(1))
-						xSize = string.byte(file:read(1))
-						for x = 1, xSize do
-							iset(
-								picture,
-								string.byte(file:read(1)),
-								currentY,
-								currentBackground,
-								currentForeground,
-								currentAlpha,
-								currentSymbol
-							)
-						end
-					end
-				end
-			end
-		end
-	end
+	multiLoad(file, picture, 0)
 end
 
 Loader[7] = function(file, picture)
-	picture[1] = string.byte(file:read(1))
-	picture[2] = string.byte(file:read(1))
-	local currentAlpha, currentSymbol, currentBackground, currentForeground, currentY
-	for alpha = 1, string.byte(file:read(1)) + 1 do
-		currentAlpha = string.byte(file:read(1)) / 255
-		for symbol = 1, string.byte(file:read(2)) + 1 do
-			currentSymbol = readUnicodeChar(file)
-			for background = 1, string.byte(file:read(1)) + 1 do
-				currentBackground = to24Bit(string.byte(file:read(1)))
-				for foreground = 1, string.byte(file:read(1)) + 1 do
-					currentForeground = to24Bit(string.byte(file:read(1)))
-					for y = 1, string.byte(file:read(1)) + 1 do
-						currentY = string.byte(file:read(1))
-						for x = 1, string.byte(file:read(1)) + 1 do
-							iset(
-								picture,
-								string.byte(file:read(1)),
-								currentY,
-								currentBackground,
-								currentForeground,
-								currentAlpha,
-								currentSymbol
-							)
-						end
-					end
-				end
-			end
-		end
-	end
+	multiLoad(file, picture, 1)
 end
 
 local function loadImage(path)
