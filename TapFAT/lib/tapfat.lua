@@ -1,6 +1,6 @@
 --[[Compys(TM) TapFAT Shared Library v1.01
 	2021 (C) Compys S&N Systems
-    This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
+	This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
 	With this system you can use Computronics Tapes as a file storage like Floppy
 	The first 8Kb of a space is reserved for special FAT with info about files on tape
 	Data fragmentation is supported to more effective space allocation on a tape

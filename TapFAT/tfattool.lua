@@ -1,6 +1,6 @@
 --[[Compys(TM) TapFAT Tape Configuration Tool v1.01
 	2021 (C) Compys S&N Systems
-    This is a tool for do some manipulations with TapFAT tapes
+	This is a tool for do some manipulations with TapFAT tapes
 	Please, load "tfatinit" driver firstly
 ]]
 local comp = require('component')

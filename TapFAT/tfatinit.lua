@@ -1,6 +1,6 @@
 --[[Compys(TM) TapFAT Driver v1.01
 	2021 (C) Compys S&N Systems
-    This is a driver for a "Tape File Allocation Table" (or "TapFAT") system 
+	This is a driver for a "Tape File Allocation Table" (or "TapFAT") system 
 	It mounts Computronics Streamers as a filesystem, to use with TapFAT tapes
 	To prepare new tape use Quick format in "tfattool" utility
 ]]
