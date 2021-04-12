@@ -2,9 +2,6 @@
 Some Lua software for OpenComputers
 
 **Programs**
-* `CopyTape` - Utility for copying Computronics tapes in real time (with two tape drives)
-   
-   Get : `pastebin get A3ki3HGg copytape.lua`
 * `OpenWebNet` - In-world network protocol for web pages and content sharing  
    Developing freezed
 
@@ -18,7 +15,7 @@ Some Lua software for OpenComputers
 * `Memphisto` - Web browser for special NFP pages
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/Memphisto/README.md)
-* `TapFAT` - Filesystem for Computronics Tape
+* `TapFAT` - Filesystem for Computronics Tapes
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/TapFAT/README.md)
 * `RemoteDISK` - Network Disk server (RC daemon) and client with Driver library
@@ -32,7 +29,10 @@ Some Lua software for OpenComputers
    Get : `pastebin get eYu7ndgB sdcreate.lua`
 * `SecuROM` - Modification of Lua BIOS for require password before booting
    
-   Get : `pastebin get vrK88gNA srcreate.lua` 
+   Get : `pastebin get vrK88gNA srcreate.lua`
+* `CopyTape` - Utility for copying Computronics tapes in real time (with two tape drives)
+   
+   Get : `pastebin get A3ki3HGg copytape.lua`
 * `StorTape` - Computronics Tape data backup system, planning compression and encryption (but I too lazy)
    
    Get : `pastebin get QjykSxTt stortape.lua`  
