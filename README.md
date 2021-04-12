@@ -18,9 +18,9 @@ Some Lua software for OpenComputers
 * `Memphisto` - Web browser for special NFP pages
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/Memphisto/README.md)
-* `TapFAT` - Filesystem for Computronics Tape.
+* `TapFAT` - Filesystem for Computronics Tape
 
-   In developing..
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/TapFAT/README.md)
 * `RemoteDISK` - Network Disk server (RC daemon) and client with Driver library
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/README.md)
@@ -36,4 +36,4 @@ Some Lua software for OpenComputers
 * `StorTape` - Computronics Tape data backup system, planning compression and encryption (but I too lazy)
    
    Get : `pastebin get QjykSxTt stortape.lua`  
-   **ALERT** - Deprecated, TapFAT is coming...
+   **ALERT** - Deprecated, use TapFAT
