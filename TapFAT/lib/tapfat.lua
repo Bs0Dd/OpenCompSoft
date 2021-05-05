@@ -36,11 +36,6 @@ local function setval(ptab, filtab, val, num)
 	elseif num == -1 then return true end
 	local i = 0
 	local scan = filtab
-	while i < #ptab - 1 do
-		if ptab[i+1]:sub(-1)~='/' then ptab[i+1] = ptab[i+1]..'/' end
-		i = i+1
-	end
-	i = 0
 	while i < num do
 		if scan[ptab[i+1]] == nil then return false end
 		scan = scan[ptab[i+1]]
@@ -50,20 +45,12 @@ local function setval(ptab, filtab, val, num)
 	return setval(ptab, filtab, scan, num-1)
 end
 
-local function getval(ptab, filtab, trydir)
+local function getval(ptab, filtab)
 	local i = 0
 	local scan = filtab
-	while i < #ptab - 1 do
-		if ptab[i+1]:sub(-1)~='/' then ptab[i+1] = ptab[i+1]..'/' end
-		i = i+1
-	end
-	i = 0
 	while i < #ptab do
 		if scan[ptab[i+1]] == nil then
-			if i+1 == #ptab and trydir then
-				ptab[i+1] = ptab[i+1]..'/'
-				if scan[ptab[i+1]] == nil then return false end 
-			else return false end
+			return false
 		end
 		scan = scan[ptab[i+1]]
 		i = i+1
@@ -93,7 +80,7 @@ local function mkrdir(ptab, filtab, num)
 		table.insert(checks, ptab[i+1])
 		i = i+1
 	end
-	dir = getval(checks, filtab, true)
+	dir = getval(checks, filtab)
 	if dir == false then
 		setval(checks, filtab, {-1})
 	end
@@ -106,7 +93,7 @@ local function remdir(fil, fat, seg)
 			if file[1] == -1 then
 				local cseg = copytb(seg)
 				table.insert(cseg, k)
-				local sfil = getval(cseg, fat[1], true)
+				local sfil = getval(cseg, fat[1])
 				if not sfil then return sfil end
 				if not remdir(sfil, fat, cseg) then return false end
 			else
@@ -216,7 +203,7 @@ function tapfat.proxy(address)
 		if path == '' then return true end
 		local seg = fs.segments(path)
 		local fat = proxyObj.getTable()
-		local list = getval(seg, fat[1], true)
+		local list = getval(seg, fat[1])
 		if type(list) ~= 'table' then return false end
 		if list[1] == -1 then return true else return false end
 	end
@@ -238,7 +225,7 @@ function tapfat.proxy(address)
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
-		local rlist = getval(seg, fat[1], true)
+		local rlist = getval(seg, fat[1])
 		if rlist == false then return nil, 'no such file or directory: '..path end
 		local list = {}
 		if rlist[1] ~= -1 and path ~= '' then return {seg[#seg], n=1} end
@@ -364,8 +351,8 @@ function tapfat.proxy(address)
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
 		local seg2 = fs.segments(newpath)
-		local fil = getval(seg, fat[1], true)
-		local fil2 = getval(seg2, fat[1], true)
+		local fil = getval(seg, fat[1])
+		local fil2 = getval(seg2, fat[1])
 		if not fil or fil2 then return false end
 		if fil[1] ~= -1 then seg2 = fs.segments(newpath) end
 		setval(seg, fat[1], nil)
