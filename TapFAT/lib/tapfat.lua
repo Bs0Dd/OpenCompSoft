@@ -13,6 +13,7 @@ local ser = sz.serialize
 local unser = sz.unserialize
 
 local filedescript = {}
+local driveprops = {tabcom = false}
 
 local function copytb(source)
 	local result = {}
@@ -133,6 +134,78 @@ local function custsr(a, b)
 	else return false end
 end
 
+local lzsscom, lzssdcom
+if require("computer").getArchitecture() == "Lua 5.3" then
+	lzsscom, lzssdcom = load([[return function(input)
+  local offset, output = 1, {}
+  local window = ''
+  local function search()
+    for i = 18, 3, -1 do
+      local str = string.sub(input, offset, offset + i - 1)
+      local pos = string.find(window, str, 1, true)
+      if pos then
+        return pos, str
+      end
+    end
+  end
+  while offset <= #input do
+    local flags, buffer = 0, {}
+    for i = 0, 7 do
+      if offset <= #input then
+        local pos, str = search()
+        if pos and #str >= 3 then
+          local tmp = ((pos - 1) << 4) | (#str - 3)
+          buffer[#buffer + 1] = string.pack('>I2', tmp)
+        else
+          flags = flags | (1 << i)
+          str = string.sub(input, offset, offset)
+          buffer[#buffer + 1] = str
+        end
+        window = string.sub(window .. str, -4096)
+        offset = offset + #str
+      else
+        break
+      end
+    end
+    if #buffer > 0 then
+      output[#output + 1] = string.char(flags)
+      output[#output + 1] = table.concat(buffer)
+    end
+  end
+  return table.concat(output)
+end, function(input)
+  local offset, output = 1, {}
+  local window = ''
+  while offset <= #input do
+    local flags = string.byte(input, offset)
+    offset = offset + 1
+    for i = 1, 8 do
+      local str = nil
+      if (flags & 1) ~= 0 then
+        if offset <= #input then
+          str = string.sub(input, offset, offset)
+          offset = offset + 1
+        end
+      else
+        if offset + 1 <= #input then
+          local tmp = string.unpack('>I2', input, offset)
+          offset = offset + 2
+          local pos = (tmp >> 4) + 1
+          local len = (tmp & (15)) + 3
+          str = string.sub(window, pos, pos + len - 1)
+        end
+      end
+      flags = flags >> 1
+      if str then
+        output[#output + 1] = str
+        window = string.sub(window .. str, -4096)
+      end
+    end
+  end
+  return table.concat(output)
+end]])()
+end
+
 local tapfat = {}
 function tapfat.proxy(address)
 	local found = false
@@ -155,11 +228,33 @@ function tapfat.proxy(address)
 		return component.invoke(address, "isReady")
 	end
 	
+	proxyObj.setDriveProperty = function(proptype, value)
+		checkArg(1,proptype,"string")
+		checkArg(2,value,"number","string","boolean")
+		if driveprops[proptype] == nil then return nil, 'Invalid property' end
+		driveprops[proptype] = value
+		return true
+	end
+	
+	proxyObj.getDriveProperty = function(proptype)
+		checkArg(1,proptype,"string")
+		if driveprops[proptype] == nil then return nil, 'Invalid property' end
+		return driveprops[proptype]
+	end
+	
 	proxyObj.getTable = function()
 		if not proxyObj.isReady() then error('Device is not ready') end
 		component.invoke(address, "seek", -math.huge)
-		local rawtab = component.invoke(address, "read", 8192)
-		local rawtm = rawtab:match("[^\0]+")
+		local idnt = component.invoke(address, "read", 2)
+		local rawtm
+		if idnt == "{{" then
+			local rawtab = idnt..component.invoke(address, "read", 8190)
+			rawtm = rawtab:match("[^\0]+")
+		else
+			if not lzssdcom then error('LZSS decompression: Lua 5.3 required') end
+			local lzsstab = string.unpack('s2', idnt..component.invoke(address, "read", 8190))
+			rawtm = lzssdcom(lzsstab)
+		end
 		if not rawtm then error('FAT corrupted: table not found') end
 		uns, err = unser(rawtm)
 		if not uns then error('FAT corrupted: '..err)
@@ -170,9 +265,11 @@ function tapfat.proxy(address)
 		checkArg(1,tab,"table")
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local tstr = ser(tab)
-		if #tstr > 8192 then 
-			return nil, 'Not enough space for FAT'
+		if driveprops.tabcom then
+			if not lzsscom then error('LZSS compression: Lua 5.3 required') end
+			tstr = string.pack('s2', lzsscom(tstr))
 		end
+		if #tstr > 8192 then return nil, 'Not enough space for FAT' end
 		component.invoke(address, "seek", -math.huge)
 		component.invoke(address, "write", string.rep("\0", 8192))
 		component.invoke(address, "seek", -math.huge)

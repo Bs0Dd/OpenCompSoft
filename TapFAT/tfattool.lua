@@ -243,11 +243,10 @@ local function upList(after)
 	  drawBack()
 	  if after then
 		Dialog(false, false, alarmcl, {'No TapFAT drives found!', 'You have unmounted all drives.', 'Therefore, further work is impossible.'}, nil)
-	    work = false
 	  else
 		Dialog(false, false, alarmcl, {'No TapFAT drives found!', 'Please check if the driver is loaded', 'or streamers is connected!'}, nil)
-	    work = false
 	  end 
+	  work = false
   end
 end
 
@@ -263,9 +262,28 @@ end
 
 upList(false)
 while work do
-	local whatdo = Dialog(false, true, normcol, {}, nil, {'Tape information', 'Unmount drive', 'Format tape', 'Set label', 'Exit'})
+	local whatdo = Dialog(false, true, normcol, {}, nil, {'Tapes information', 'Drives settings', 'Unmount drive', 'Format tape', 'Set label', 'Exit'})
 	if whatdo == 'Exit' then
 		work = false
+	elseif whatdo == 'Drives settings' then
+		local workwith
+		if #tapes > 1 then
+			workwith = selTap(tapes)[1]
+		else
+			workwith = tapes[1][1]
+		end
+		if workwith ~= -1 then
+			tabcom = workwith.getDriveProperty('tabcom') and 'YES' or 'NO'
+			local action = Dialog(false, true, normcol, {}, nil, {'Table compression: '..tabcom, 'Back'})
+			if action == 'Table compression: '..tabcom then
+				local stat = Dialog(false, false, normcol, {'Do you want to use table compression?'}, nil, {'YES', 'NO'})
+				if stat == 'YES' then
+					workwith.setDriveProperty('tabcom', true)
+				else
+					workwith.setDriveProperty('tabcom', false)
+				end
+			end
+		end
 	elseif whatdo == 'Unmount drive' then
 		local workwith
 		if #tapes > 1 then
@@ -280,7 +298,7 @@ while work do
 			  upList(true)
 			end
 		end
-	elseif whatdo == 'Tape information' then
+	elseif whatdo == 'Tapes information' then
 		local workwith, mnt
 		if #tapes > 1 then
 			local dat = selTap(tapes)
