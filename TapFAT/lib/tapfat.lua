@@ -245,19 +245,20 @@ function tapfat.proxy(address)
 	proxyObj.getTable = function()
 		if not proxyObj.isReady() then error('Device is not ready') end
 		component.invoke(address, "seek", -math.huge)
-		local idnt = component.invoke(address, "read", 2)
+		local tabsec = component.invoke(address, "read", 8192)
 		local rawtm
-		if idnt == "{{" then
-			local rawtab = idnt..component.invoke(address, "read", 8190)
-			rawtm = rawtab:match("[^\0]+")
+		if tabsec:sub(0,2) == "{{" then
+			rawtm = tabsec:match("[^\0]+")
+		elseif tabsec:sub(3,4) == "\120\156" then
+			if not component.isAvailable('data') then error('inflate: Data card required') end
+			rawtm = component.data.inflate(string.unpack('s2', tabsec))
 		else
 			if not lzssdcom then error('LZSS decompression: Lua 5.3 required') end
-			local lzsstab = string.unpack('s2', idnt..component.invoke(address, "read", 8190))
-			rawtm = lzssdcom(lzsstab)
+			rawtm = lzssdcom(string.unpack('s2', tabsec))
 		end
-		if not rawtm then error('FAT corrupted: table not found') end
-		uns, err = unser(rawtm)
-		if not uns then error('FAT corrupted: '..err)
+		if not rawtm or rawtm == "" then error('FAT corrupted: table not found') end
+		local uns, err = unser(rawtm)
+		if not uns then error('FAT corrupted: '..(err or 'unknown reason'))
 		else return uns end
 	end
 	
@@ -265,9 +266,12 @@ function tapfat.proxy(address)
 		checkArg(1,tab,"table")
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local tstr = ser(tab)
-		if driveprops.tabcom then
+		if driveprops.tabcom == 1 then
 			if not lzsscom then error('LZSS compression: Lua 5.3 required') end
 			tstr = string.pack('s2', lzsscom(tstr))
+		elseif driveprops.tabcom == 2 then
+			if not component.isAvailable('data') then error('deflate: Data card required') end
+			tstr = string.pack('s2', component.data.deflate(tstr))
 		end
 		if #tstr > 8192 then return nil, 'Not enough space for FAT' end
 		component.invoke(address, "seek", -math.huge)
@@ -289,7 +293,7 @@ function tapfat.proxy(address)
 				component.invoke(address, "write", ns)
 			end
 		end
-		local res, err = proxyObj.setTable({{}, {{8192, math.ceil(siz)}}})
+		local res, err = proxyObj.setTable({{}, {{8192, math.ceil(siz)-1}}})
 		if not res then return res, err else return true end
 	end
 	
@@ -337,7 +341,7 @@ function tapfat.proxy(address)
 	
 	proxyObj.spaceTotal = function()
 		if not proxyObj.isReady() then error('Device is not ready') end
-		return component.invoke(address, "getSize")-8192
+		return component.invoke(address, "getSize")-8193
 	end
 	
 	proxyObj.open = function(path,mode)
@@ -384,7 +388,7 @@ function tapfat.proxy(address)
 								curb = curb + 1 
 							end
 						end
-					end
+					elseif #fat[2] == 0 then return nil, "not enough space" end
 					if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
 				elseif mode == "a" or mode == "ab" then
 					local fildat = getval(seg, fat[1])
@@ -590,13 +594,18 @@ function tapfat.proxy(address)
 			return nil, "bad file descriptor"
 		end
 		local fat = proxyObj.getTable()
+		if #fat[2] == 0 then return nil, "not enough space" end
 		local seg = filedescript[fd].path
 		local fil = getval(seg, fat[1])
 		filedescript[fd].seek = filedescript[fd].seek + #data
 		if filedescript[fd].seek > fil[1] or #fil[3] == 0 then
 			fil[1] = fil[1] + #data
 			while true do
-				if fat[2][1][2] - fat[2][1][1] < #data then
+				if #fat[2] == 0 then
+					fil[1] = blockssiz(1, #fil[3], fil)
+					local res, err = proxyObj.setTable(fat)
+					if not res then return res, err else return true end
+				elseif fat[2][1][2] - fat[2][1][1] < #data then
 					table.insert(fil[3], {fat[2][1][1], fat[2][1][2]})
 					component.invoke(address, "seek", -math.huge)
 					component.invoke(address, "seek", fat[2][1][1])
@@ -630,7 +639,11 @@ function tapfat.proxy(address)
 				strtbl = strtbl + 1 
 			end
 			while true do
-				if fat[2][1][2] - fat[2][1][1] < #data then
+				if #fat[2] == 0 then
+					fil[1] = blockssiz(1, #fil[3], fil)
+					local res, err = proxyObj.setTable(fat)
+					if not res then return res, err else return true end
+				elseif fat[2][1][2] - fat[2][1][1] < #data then
 					table.insert(fil[3], {fat[2][1][1], fat[2][1][2]})
 					component.invoke(address, "seek", -math.huge)
 					component.invoke(address, "seek", fat[2][1][1])

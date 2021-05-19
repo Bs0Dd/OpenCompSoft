@@ -273,14 +273,20 @@ while work do
 			workwith = tapes[1][1]
 		end
 		if workwith ~= -1 then
-			tabcom = workwith.getDriveProperty('tabcom') and 'YES' or 'NO'
-			local action = Dialog(false, true, normcol, {}, nil, {'Table compression: '..tabcom, 'Back'})
-			if action == 'Table compression: '..tabcom then
-				local stat = Dialog(false, false, normcol, {'Do you want to use table compression?'}, nil, {'YES', 'NO'})
-				if stat == 'YES' then
-					workwith.setDriveProperty('tabcom', true)
-				else
-					workwith.setDriveProperty('tabcom', false)
+			while true do
+				drawBack()
+				tabcom = workwith.getDriveProperty('tabcom') == 1 and 'LZSS' or workwith.getDriveProperty('tabcom') == 2 and 'Data card' or 'No'
+				local action = Dialog(false, true, normcol, {}, nil, {'Table compression: '..tabcom, 'Back'})
+				if action == 'Table compression: '..tabcom then
+					local stat = Dialog(false, false, normcol, {'Do you want to use table compression?', ''}, nil, {'LZSS', 'Data card' , 'No'})
+					if stat == 'LZSS' then
+						workwith.setDriveProperty('tabcom', 1)
+					elseif stat == 'Data card' then
+						workwith.setDriveProperty('tabcom', 2)
+					else
+						workwith.setDriveProperty('tabcom', false)
+					end
+				elseif action == 'Back' then break
 				end
 			end
 		end

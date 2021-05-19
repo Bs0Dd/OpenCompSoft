@@ -14,8 +14,8 @@ local args, options = shell.parse(...)
 print('╔══════════════════════════════╗')
 print('╟───────────[TapFAT]───────────╢')
 print('║     TapFAT Driver v1.01      ║')
+print('║        Filesystem for        ║')
 print('║      Computronics tapes      ║')
-print('║      Filesystem driver       ║')
 print('║ 2021  (c) Compys S&N Systems ║')
 print('╚══════════════════════════════╝')
 
@@ -42,7 +42,7 @@ else
 		if v == "tape_drive" then
 			local mntpath = '/mnt/'..k:sub(0,3)
 			if table.pack(fs.get(mntpath))[2] ~= mntpath then
-			  print("Mounting " .. k .. " on " .. mntpath)
+			  print("Mounting " .. k .. " to " .. mntpath)
 			  fs.mount(tapfat.proxy(k),mntpath)
 			  count = count + 1
 			end
