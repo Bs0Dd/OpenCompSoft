@@ -13,7 +13,7 @@ local ser = sz.serialize
 local unser = sz.unserialize
 
 local filedescript = {}
-local driveprops = {tabcom = false}
+local driveprops = {tabcom = false, stordate = true}
 
 local function copytb(source)
 	local result = {}
@@ -24,12 +24,13 @@ local function copytb(source)
 end
 
 local function gettim()
-  local name = os.tmpname()
-  local f = io.open(name, "w")
-  f:close()
-  local time = math.floor(fs.lastModified(name) / 1000)
-  fs.remove(name)
-  return time
+	if not driveprops.stordate then return 0 end
+	local name = 'lt'
+	local f = io.open(name, "w")
+	f:close()
+	local time = fs.lastModified(name)
+	fs.remove(name)
+	return time
 end
 
 local function setval(ptab, filtab, val, num)
@@ -83,7 +84,7 @@ local function mkrdir(ptab, filtab, num)
 	end
 	dir = getval(checks, filtab)
 	if dir == false then
-		setval(checks, filtab, {-1})
+		setval(checks, filtab, {-1, gettim()})
 	end
 	return mkrdir(ptab, filtab, num+1)
 end
@@ -329,10 +330,14 @@ function tapfat.proxy(address)
 		local rlist = getval(seg, fat[1])
 		if rlist == false then return nil, 'no such file or directory: '..path end
 		local list = {}
-		if rlist[1] ~= -1 and path ~= '' then return {seg[#seg], n=1} end
+		if rlist[1] ~= -1 and #seg ~= 0 then return {seg[#seg], n=1} end
 		for k, p in pairs(rlist) do
 			if type(k) ~= 'number' then
-				table.insert(list, k)
+				if p[1] == -1 then
+					table.insert(list, k..'/')
+				else
+					table.insert(list, k)
+				end
 			end
 		end
 		list.n = #list
@@ -544,7 +549,7 @@ function tapfat.proxy(address)
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
 		local fil = getval(seg, fat[1])
-		if not fil then return 0 end
+		if not fil or fil[1] == -1 then return 0 end
 		return fil[1]
 	end
 	
@@ -610,7 +615,7 @@ function tapfat.proxy(address)
 					component.invoke(address, "seek", -math.huge)
 					component.invoke(address, "seek", fat[2][1][1])
 					component.invoke(address, "write", data:sub(0,fat[2][1][2]-fat[2][1][1]))
-					data = data:sub(fat[2][1][2]-fat[2][1][1])
+					data = data:sub(fat[2][1][2]-fat[2][1][1]+1)
 					table.remove(fat[2], 1)
 				else
 					table.insert(fil[3], {fat[2][1][1], fat[2][1][1]+#data})
@@ -635,7 +640,7 @@ function tapfat.proxy(address)
 				component.invoke(address, "seek", -math.huge)
 				component.invoke(address, "seek", fil[3][strtbl][1])
 				component.invoke(address, "write", data:sub(0,fil[3][strtbl][2] - fil[3][strtbl][1]))
-				data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1])
+				data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1]+1)
 				strtbl = strtbl + 1 
 			end
 			while true do
@@ -648,7 +653,7 @@ function tapfat.proxy(address)
 					component.invoke(address, "seek", -math.huge)
 					component.invoke(address, "seek", fat[2][1][1])
 					component.invoke(address, "write", data:sub(0,fat[2][1][2]-fat[2][1][1]))
-					data = data:sub(fat[2][1][2]-fat[2][1][1])
+					data = data:sub(fat[2][1][2]-fat[2][1][1]+1)
 					table.remove(fat[2], 1)
 				else
 					table.insert(fil[3], {fat[2][1][1], fat[2][1][1]+#data})
@@ -672,7 +677,7 @@ function tapfat.proxy(address)
 				component.invoke(address, "seek", -math.huge)
 				component.invoke(address, "seek", fil[3][strtbl][1])
 				component.invoke(address, "write", data:sub(0,fil[3][strtbl][2] - fil[3][strtbl][1]))
-				data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1])
+				data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1]+1)
 				strtbl = strtbl + 1 
 			end
 		end

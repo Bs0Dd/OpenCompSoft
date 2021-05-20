@@ -276,15 +276,23 @@ while work do
 			while true do
 				drawBack()
 				tabcom = workwith.getDriveProperty('tabcom') == 1 and 'LZSS' or workwith.getDriveProperty('tabcom') == 2 and 'Data card' or 'No'
-				local action = Dialog(false, true, normcol, {}, nil, {'Table compression: '..tabcom, 'Back'})
+				stordate = workwith.getDriveProperty('stordate') and 'Yes' or 'No'
+				local action = Dialog(false, true, normcol, {}, nil, {'Table compression: '..tabcom, 'Store file date: '..stordate, 'Back'})
 				if action == 'Table compression: '..tabcom then
-					local stat = Dialog(false, false, normcol, {'Do you want to use table compression?', ''}, nil, {'LZSS', 'Data card' , 'No'})
+					local stat = Dialog(false, false, normcol, {'Do you want to use table compression?', ''}, nil, {'LZSS', 'Data card', 'No'})
 					if stat == 'LZSS' then
 						workwith.setDriveProperty('tabcom', 1)
 					elseif stat == 'Data card' then
 						workwith.setDriveProperty('tabcom', 2)
 					else
 						workwith.setDriveProperty('tabcom', false)
+					end
+				elseif action == 'Store file date: '..stordate then
+					local stat = Dialog(false, false, normcol, {'Do you want to store file date?', ''}, nil, {'Yes', 'No'})
+					if stat == 'Yes' then
+						workwith.setDriveProperty('stordate', true)
+					else
+						workwith.setDriveProperty('stordate', false)
 					end
 				elseif action == 'Back' then break
 				end
