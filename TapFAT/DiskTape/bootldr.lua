@@ -1,19 +1,91 @@
---[[Compys(TM) TapFAT Shared Library v1.01
-	2021 (C) Compys S&N Systems
-	This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
-	With this system you can use Computronics Tapes as a file storage like Floppy
-	The first 8Kb of a space is reserved for special FAT with info about files on tape
-	Data fragmentation is supported to more effective space allocation on a tape
-]]
-local component = require("component")
-local fs = require("filesystem")
-local sz = require("serialization")
-
-local ser = sz.serialize
-local unser = sz.unserialize
-
+local computer = computer
+local component = component
+local unicode = unicode
 local filedescript = {}
 local driveprops = {tabcom = false, stordate = true}
+local ramdisk
+
+for k in component.list('filesystem') do
+	local fs = component.proxy(k)
+	if fs.getLabel() == 'tmpfs' then
+		ramdisk = fs
+		break
+	end
+end
+
+local function ser(value)
+  local id = "^[%a_][%w_]*$"
+  local ts = {}
+  local result_pack = {}
+  local function recurse(current_value, depth)
+    local t = type(current_value)
+    if t == "number" then
+      if current_value ~= current_value then
+        table.insert(result_pack, "0/0")
+      elseif current_value == math.huge then
+        table.insert(result_pack, "math.huge")
+      elseif current_value == -math.huge then
+        table.insert(result_pack, "-math.huge")
+      else
+        table.insert(result_pack, tostring(current_value))
+      end
+    elseif t == "string" then
+      table.insert(result_pack, (string.format("%q", current_value):gsub("\\\n","\\n")))
+    elseif
+      t == "nil" or
+      t == "boolean" then
+      table.insert(result_pack, tostring(current_value))
+    elseif t == "table" then
+      ts[current_value] = true
+      local f
+	  local mt = getmetatable(current_value)
+      f = table.pack((mt and mt.__pairs or pairs)(current_value))
+      local i = 1
+      local first = true
+      table.insert(result_pack, "{")
+      for k, v in table.unpack(f) do
+        if not first then
+          table.insert(result_pack, ",")
+        end
+        first = nil
+        local tk = type(k)
+        if tk == "number" and k == i then
+          i = i + 1
+          recurse(v, depth + 1)
+        else
+          if tk == "string" and string.match(k, id) then
+            table.insert(result_pack, k)
+          else
+            table.insert(result_pack, "[")
+            recurse(k, depth + 1)
+            table.insert(result_pack, "]")
+          end
+          table.insert(result_pack, "=")
+          recurse(v, depth + 1)
+        end
+      end
+      ts[current_value] = nil
+      table.insert(result_pack, "}")
+    else
+      error("unsupported type: " .. t)
+    end
+  end
+  recurse(value, 1)
+  local result = table.concat(result_pack)
+  return result
+end
+
+local function unser(data)
+  local result, reason = load("return " .. data, "=data", nil, {math={huge=math.huge}})
+  if not result then
+    return nil, reason
+  end
+  local ok, output = pcall(result)
+  if not ok then
+    return nil, output
+  end
+  return output
+end
 
 local function copytb(source)
 	local result = {}
@@ -23,13 +95,37 @@ local function copytb(source)
 	return result
 end
 
+local function segments(path)
+  local parts = {}
+  for part in path:gmatch("[^\\/]+") do
+    local current, up = part:find("^%.?%.$")
+    if current then
+      if up == 2 then
+        table.remove(parts)
+      end
+    else
+      table.insert(parts, part)
+    end
+  end
+  return parts
+end
+
+local function canonical(path)
+  local result = table.concat(segments(path), "/")
+  if unicode.sub(path, 1, 1) == "/" then
+    return "/" .. result
+  else
+    return result
+  end
+end
+
 local function gettim()
 	if not driveprops.stordate then return 0 end
-	local name = '/tmp/lt'
-	local f = io.open(name, "w")
-	f:close()
-	local time = fs.lastModified(name)
-	fs.remove(name)
+	local name = 'lt'
+	local f = ramdisk.open(name, "w")
+	ramdisk.close(f)
+	local time = ramdisk.lastModified(name)
+	ramdisk.remove(name)
 	return math.ceil(time)
 end
 
@@ -136,75 +232,8 @@ local function custsr(a, b)
 end
 
 local lzsscom, lzssdcom
-if require("computer").getArchitecture() == "Lua 5.3" then
-	lzsscom, lzssdcom = load([[return function(input)
-  local offset, output = 1, {}
-  local window = ''
-  local function search()
-    for i = 18, 3, -1 do
-      local str = string.sub(input, offset, offset + i - 1)
-      local pos = string.find(window, str, 1, true)
-      if pos then
-        return pos, str
-      end
-    end
-  end
-  while offset <= #input do
-    local flags, buffer = 0, {}
-    for i = 0, 7 do
-      if offset <= #input then
-        local pos, str = search()
-        if pos and #str >= 3 then
-          local tmp = ((pos - 1) << 4) | (#str - 3)
-          buffer[#buffer + 1] = string.pack('>I2', tmp)
-        else
-          flags = flags | (1 << i)
-          str = string.sub(input, offset, offset)
-          buffer[#buffer + 1] = str
-        end
-        window = string.sub(window .. str, -4096)
-        offset = offset + #str
-      else
-        break
-      end
-    end
-    if #buffer > 0 then
-      output[#output + 1] = string.char(flags)
-      output[#output + 1] = table.concat(buffer)
-    end
-  end
-  return table.concat(output)
-end, function(input)
-  local offset, output = 1, {}
-  local window = ''
-  while offset <= #input do
-    local flags = string.byte(input, offset)
-    offset = offset + 1
-    for i = 1, 8 do
-      local str = nil
-      if (flags & 1) ~= 0 then
-        if offset <= #input then
-          str = string.sub(input, offset, offset)
-          offset = offset + 1
-        end
-      else
-        if offset + 1 <= #input then
-          local tmp = string.unpack('>I2', input, offset)
-          offset = offset + 2
-          local pos = (tmp >> 4) + 1
-          local len = (tmp & (15)) + 3
-          str = string.sub(window, pos, pos + len - 1)
-        end
-      end
-      flags = flags >> 1
-      if str then
-        output[#output + 1] = str
-        window = string.sub(window .. str, -4096)
-      end
-    end
-  end
-  return table.concat(output)
-end]])()
+if computer.getArchitecture() == "Lua 5.3" then
+	lzsscom, lzssdcom = load([[return function(a)local b,c=1,{}local d=''local function e()for f=18,3,-1 do local g=string.sub(a,b,b+f-1)local h=string.find(d,g,1,true)if h then return h,g end end end;while b<=#a do local i,j=0,{}for f=0,7 do if b<=#a then local h,g=e()if h and#g>=3 then local k=h-1<<4|#g-3;j[#j+1]=string.pack('>I2',k)else i=i|(1<<f)g=string.sub(a,b,b)j[#j+1]=g end;d=string.sub(d..g,-4096)b=b+#g else break end end;if#j>0 then c[#c+1]=string.char(i)c[#c+1]=table.concat(j)end end;return table.concat(c)end,function(a)local b,c=1,{}local d=''while b<=#a do local i=string.byte(a,b)b=b+1;for f=1,8 do local g=nil;if i&1~=0 then if b<=#a then g=string.sub(a,b,b)b=b+1 end else if b+1<=#a then local k=string.unpack('>I2',a,b)b=b+2;local h=k>>4+1;local l=k&15+3;g=string.sub(d,h,h+l-1)end end;i=i>>1;if g then c[#c+1]=g;d=string.sub(d..g,-4096)end end end;return table.concat(c)end]])()
 end
 
 local tapfat = {}
@@ -301,9 +330,9 @@ function tapfat.proxy(address)
 	proxyObj.isDirectory = function(path)
 		checkArg(1,path,"string")
 		if not proxyObj.isReady() then error('Device is not ready') end
-		path = fs.canonical(path)
+		path = canonical(path)
 		if path == '' then return true end
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		local fat = proxyObj.getTable()
 		local list = getval(seg, fat[1])
 		if type(list) ~= 'table' then return false end
@@ -312,10 +341,10 @@ function tapfat.proxy(address)
 	
 	proxyObj.lastModified = function(path)
 		checkArg(1,path,"string")
-		path = fs.canonical(path)
+		path = canonical(path)
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local fat = proxyObj.getTable()
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		local fil = getval(seg, fat[1])
 		if not fil then return 0 end
 		return fil[2]
@@ -323,10 +352,10 @@ function tapfat.proxy(address)
 	
 	proxyObj.list = function(path)
 		checkArg(1,path,"string")
-		path = fs.canonical(path)
+		path = canonical(path)
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local fat = proxyObj.getTable()
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		local rlist = getval(seg, fat[1])
 		if rlist == false then return nil, 'no such file or directory: '..path end
 		local list = {}
@@ -356,7 +385,7 @@ function tapfat.proxy(address)
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local descrpt
 		local fat = proxyObj.getTable()
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		if mode ~= "r" and mode ~= "rb" and mode ~= "w" and mode ~= "wb" and mode ~= "a" and mode ~= "ab" then
 			error("unsupported mode",2)
 		end
@@ -421,10 +450,10 @@ function tapfat.proxy(address)
 	proxyObj.remove = function(path)
 		checkArg(1,path,"string")
 		if not proxyObj.isReady() then error('Device is not ready') end
-		path = fs.canonical(path)
+		path = canonical(path)
 		if path == '' then return false end
 		local fat = proxyObj.getTable()
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		local fil = getval(seg, fat[1], true)
 		if fil == false then return false end
 		if fil[1] == -1 then
@@ -453,14 +482,14 @@ function tapfat.proxy(address)
 		checkArg(1,path,"string")
 		checkArg(1,newpath,"string")
 		if not proxyObj.isReady() then error('Device is not ready') end
-		path = fs.canonical(path)
+		path = canonical(path)
 		local fat = proxyObj.getTable()
-		local seg = fs.segments(path)
-		local seg2 = fs.segments(newpath)
+		local seg = segments(path)
+		local seg2 = segments(newpath)
 		local fil = getval(seg, fat[1])
 		local fil2 = getval(seg2, fat[1])
 		if not fil or fil2 then return false end
-		if fil[1] ~= -1 then seg2 = fs.segments(newpath) end
+		if fil[1] ~= -1 then seg2 = segments(newpath) end
 		setval(seg, fat[1], nil)
 		setval(seg2, fat[1], fil)
 		if not setval(seg2, fat[1], fil) then return false end
@@ -544,10 +573,10 @@ function tapfat.proxy(address)
 	proxyObj.size = function(path)
 		checkArg(1,path,"string")
 		if not proxyObj.isReady() then error('Device is not ready') end
-		path = fs.canonical(path)
+		path = canonical(path)
 		if path == '' then return 0 end
 		local fat = proxyObj.getTable()
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		local fil = getval(seg, fat[1])
 		if not fil or fil[1] == -1 then return 0 end
 		return fil[1]
@@ -567,9 +596,9 @@ function tapfat.proxy(address)
 	proxyObj.makeDirectory = function(path)
 		checkArg(1,path,"string")
 		if not proxyObj.isReady() then error('Device is not ready') end
-		path = fs.canonical(path)
+		path = canonical(path)
 		local fat = proxyObj.getTable()
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		mkrdir(seg, fat[1], 1) 
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
@@ -578,9 +607,9 @@ function tapfat.proxy(address)
 	proxyObj.exists = function(path)
 		checkArg(1,path,"string")
 		if not proxyObj.isReady() then error('Device is not ready') end
-		path = fs.canonical(path)
+		path = canonical(path)
 		if path == '' then return true end
-		local seg = fs.segments(path)
+		local seg = segments(path)
 		local fat = proxyObj.getTable()
 		local list = getval(seg, fat[1])
 		if list then return true else return list end
@@ -697,4 +726,35 @@ function tapfat.proxy(address)
 	
 	return proxyObj
 end
-return tapfat
+
+local drive = tapfat.proxy(component.list('tape_drive')())
+local oproxy = component.proxy
+function component.proxy(address)
+	checkArg(1,address,"string")
+	if drive.address == address then
+		return drive
+	end
+	return oproxy(address)
+end
+
+local olist = component.list
+function component.list(filter, exact)
+	local dlist = olist(filter, exact)
+	if filter == nil or (exact and filter == 'filesystem') or (not exact and ('filesystem'):find(filter, nil, true)) then
+		dlist[drive.address] = 'filesystem'
+	end
+	return dlist
+end
+
+local oinvoke = component.invoke
+function component.invoke(address, method, ...)
+	checkArg(1,address,"string")
+	checkArg(2,method,"string")
+	if drive.address == address then
+		if drive[method] == nil then
+			error("no such method",2)
+		end
+		return drive[method](...)
+	end
+	return oinvoke(address, method, ...)
+end
