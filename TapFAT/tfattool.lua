@@ -11,6 +11,8 @@ local unicode = require('unicode')
 local len = unicode.len
 local sub = unicode.sub
 local keys = require('keyboard').keys
+local ser = require("serialization").serialize
+local unser = require("serialization").unserialize
 local gpu = comp.gpu
 
 local cx, cy = gpu.getResolution()
@@ -273,29 +275,48 @@ while work do
 			workwith = tapes[1][1]
 		end
 		if workwith ~= -1 then
+			local cfg, cfgf = {tabcom = workwith.getDriveProperty('tabcom'), stordate = workwith.getDriveProperty('stordate')}
 			while true do
 				drawBack()
-				tabcom = workwith.getDriveProperty('tabcom') == 1 and 'LZSS' or workwith.getDriveProperty('tabcom') == 2 and 'Data card' or 'No'
-				stordate = workwith.getDriveProperty('stordate') and 'Yes' or 'No'
+				tabcom = cfg.tabcom == 1 and 'LZSS' or cfg.tabcom == 2 and 'Data card' or 'No'
+				stordate = cfg.stordate and 'Yes' or 'No'
 				local action = Dialog(false, true, normcol, {}, nil, {'Table compression: '..tabcom, 'Store file date: '..stordate, 'Back'})
 				if action == 'Table compression: '..tabcom then
 					local stat = Dialog(false, false, normcol, {'Do you want to use table compression?', ''}, nil, {'LZSS', 'Data card', 'No'})
 					if stat == 'LZSS' then
 						workwith.setDriveProperty('tabcom', 1)
+						cfg.tabcom = 1
 					elseif stat == 'Data card' then
 						workwith.setDriveProperty('tabcom', 2)
+						cfg.tabcom = 2
 					else
 						workwith.setDriveProperty('tabcom', false)
+						cfg.tabcom = false
 					end
 				elseif action == 'Store file date: '..stordate then
 					local stat = Dialog(false, false, normcol, {'Do you want to store file date?', ''}, nil, {'Yes', 'No'})
 					if stat == 'Yes' then
 						workwith.setDriveProperty('stordate', true)
+						cfg.stordate = true
 					else
 						workwith.setDriveProperty('stordate', false)
+						cfg.stordate = false
 					end
 				elseif action == 'Back' then break
 				end
+			end
+			if not fs.exists('/etc/tapfat.cfg') then
+				cfgf = fs.open('/etc/tapfat.cfg', 'w')
+				cfgf:write(ser({[workwith.address]=cfg}))
+				cfgf:close()
+			else
+				cfgf = io.open('/etc/tapfat.cfg')
+				local cfgtb = unser(cfgf:read("*a"))
+				cfgf = fs.open('/etc/tapfat.cfg', 'w')
+				if not cfgtb then cfgtb = {} end
+				cfgtb[workwith.address] = cfg
+				cfgf:write(ser(cfgtb))
+				cfgf:close()
 			end
 		end
 	elseif whatdo == 'Unmount drive' then

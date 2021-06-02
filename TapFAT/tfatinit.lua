@@ -8,6 +8,7 @@ local component = require("component")
 local tapfat = require("tapfat")
 local fs = require("filesystem")
 local shell = require("shell")
+local unser = require("serialization").unserialize
 
 local args, options = shell.parse(...)
 
@@ -37,13 +38,23 @@ elseif options.u then
 	end
 	if count == 0 then print('No drives found for unmounting.') end
 else
-	local count = 0
+	local count, cfg = 0
+	if fs.exists('/etc/tapfat.cfg') then
+		local cfgf = io.open('/etc/tapfat.cfg')
+		cfg = unser(cfgf:read("*a"))
+	end
 	for k,v in component.list("tape_drive") do
 		if v == "tape_drive" then
 			local mntpath = '/mnt/'..k:sub(0,3)
 			if table.pack(fs.get(mntpath))[2] ~= mntpath then
 			  print("Mounting " .. k .. " to " .. mntpath)
-			  fs.mount(tapfat.proxy(k),mntpath)
+			  local tpr = tapfat.proxy(k)
+			  if cfg and cfg[tpr.address] then
+				for k2, v2 in pairs(cfg[tpr.address]) do
+					tpr.setDriveProperty(k2, v2)
+				end
+			  end
+			  fs.mount(tpr,mntpath)
 			  count = count + 1
 			end
 		end
