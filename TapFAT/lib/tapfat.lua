@@ -275,8 +275,7 @@ function tapfat.proxy(address)
 			tstr = string.pack('s2', component.data.deflate(tstr))
 		end
 		if #tstr > 8192 then return nil, 'Not enough space for FAT' end
-		component.invoke(address, "seek", -math.huge)
-		component.invoke(address, "write", string.rep("\0", 8192))
+		if #tstr ~= 8192 then tstr = tstr.."\0" end
 		component.invoke(address, "seek", -math.huge)
 		component.invoke(address, "write", tstr)
 		return #tstr
