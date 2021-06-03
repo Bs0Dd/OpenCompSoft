@@ -134,7 +134,11 @@ local function Dialog(uv,Menu,cl,Lines,Str,But)
 		term.write(Buttons())
 	end
     if CurBut==0 then
-      SetColor({0xFFFFFF, 0x333333})
+	  if gpu.maxDepth() > 1 then
+	    SetColor({0xFFFFFF, 0x333333})
+	  else
+	    SetColor({0xFFFFFF, 0x000000})
+	  end
       local S=Str
       if len(S)>W-4 then S='..'..sub(S,-W+6) end
       gpu.set(x+2, y+H-3, string.rep(' ',W-4))
