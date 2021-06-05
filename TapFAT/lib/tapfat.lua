@@ -33,31 +33,19 @@ local function gettim()
 	return math.ceil(time)
 end
 
-local function setval(ptab, filtab, val, num)
-	if num == nil then num = #ptab-1
-	elseif num == -1 then return true end
-	local i = 0
-	local scan = filtab
-	while i < num do
-		if scan[ptab[i+1]] == nil then return false end
-		scan = scan[ptab[i+1]]
-		i = i+1
-	end
-	scan[ptab[i+1]] = val
-	return setval(ptab, filtab, scan, num-1)
-end
-
-local function getval(ptab, filtab)
-	local i = 0
+local function oprval(ptab, filtab, val)
+	if #ptab < 1 then return filtab end
+	local i = 1
 	local scan = filtab
 	while i < #ptab do
-		if scan[ptab[i+1]] == nil then
+		if scan[ptab[i]] == nil then
 			return false
 		end
-		scan = scan[ptab[i+1]]
+		scan = scan[ptab[i]]
 		i = i+1
 	end
-	return scan
+	if val == nil then return scan[ptab[i]]
+	else scan[ptab[i]] = val return true end
 end
 
 local function allocd(filtab, space)
@@ -82,9 +70,9 @@ local function mkrdir(ptab, filtab, num)
 		table.insert(checks, ptab[i+1])
 		i = i+1
 	end
-	dir = getval(checks, filtab)
+	dir = oprval(checks, filtab)
 	if dir == false then
-		setval(checks, filtab, {-1, gettim()})
+		oprval(checks, filtab, {-1, gettim()})
 	end
 	return mkrdir(ptab, filtab, num+1)
 end
@@ -95,7 +83,7 @@ local function remdir(fil, fat, seg)
 			if file[1] == -1 then
 				local cseg = copytb(seg)
 				table.insert(cseg, k)
-				local sfil = getval(cseg, fat[1])
+				local sfil = oprval(cseg, fat[1])
 				if not sfil then return sfil end
 				if not remdir(sfil, fat, cseg) then return false end
 			else
@@ -105,7 +93,7 @@ local function remdir(fil, fat, seg)
 			end
 		end
 	end
-	setval(seg, fat[1], nil)
+	oprval(seg, fat[1], nil)
 	return true
 end
 
@@ -304,7 +292,7 @@ function tapfat.proxy(address)
 		if path == '' then return true end
 		local seg = fs.segments(path)
 		local fat = proxyObj.getTable()
-		local list = getval(seg, fat[1])
+		local list = oprval(seg, fat[1])
 		if type(list) ~= 'table' then return false end
 		if list[1] == -1 then return true else return false end
 	end
@@ -315,7 +303,7 @@ function tapfat.proxy(address)
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
-		local fil = getval(seg, fat[1])
+		local fil = oprval(seg, fat[1])
 		if not fil then return 0 end
 		return fil[2]
 	end
@@ -326,7 +314,7 @@ function tapfat.proxy(address)
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
-		local rlist = getval(seg, fat[1])
+		local rlist = oprval(seg, fat[1])
 		if rlist == false then return nil, 'no such file or directory: '..path end
 		local list = {}
 		if rlist[1] ~= -1 and #seg ~= 0 then return {seg[#seg], n=1} end
@@ -364,7 +352,7 @@ function tapfat.proxy(address)
 			descrpt = math.random(1000000000,9999999999)
 			if filedescript[descrpt] == nil then
 				if mode == "r" or mode == "rb" then
-					local fildat = getval(seg, fat[1])
+					local fildat = oprval(seg, fat[1])
 					if not fildat or fildat[1] == -1 then return nil, path end
 					filedescript[descrpt] = {
 						seek = 0,
@@ -377,7 +365,7 @@ function tapfat.proxy(address)
 						mode = 'w',
 						path = seg
 					}
-					local fildat = getval(seg, fat[1])
+					local fildat = oprval(seg, fat[1])
 					if fildat then
 						for _, blk in pairs(fildat[3]) do
 							table.insert(fat[2], blk)
@@ -393,12 +381,12 @@ function tapfat.proxy(address)
 							end
 						end
 					elseif #fat[2] == 0 then return nil, "not enough space" end
-					if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+					if not oprval(seg, fat[1], {0, gettim(), {}}) then return false end
 				elseif mode == "a" or mode == "ab" then
-					local fildat = getval(seg, fat[1])
+					local fildat = oprval(seg, fat[1])
 					local sz
 					if not fildat then
-						if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+						if not oprval(seg, fat[1], {0, gettim(), {}}) then return false end
 					else sz = fildat[1]+1 end
 					filedescript[descrpt] = {
 						seek = sz,
@@ -424,7 +412,7 @@ function tapfat.proxy(address)
 		if path == '' then return false end
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
-		local fil = getval(seg, fat[1], true)
+		local fil = oprval(seg, fat[1])
 		if fil == false then return false end
 		if fil[1] == -1 then
 			remdir(fil, fat, seg)
@@ -432,7 +420,7 @@ function tapfat.proxy(address)
 			for _, block in pairs(fil[3]) do
 				table.insert(fat[2], block)
 			end
-			setval(seg, fat[1], nil)
+			oprval(seg, fat[1], nil)
 		end
 		table.sort(fat[2], custsr)
 		local curb = 1
@@ -456,13 +444,13 @@ function tapfat.proxy(address)
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
 		local seg2 = fs.segments(newpath)
-		local fil = getval(seg, fat[1])
-		local fil2 = getval(seg2, fat[1])
+		local fil = oprval(seg, fat[1])
+		local fil2 = oprval(seg2, fat[1])
 		if not fil or fil2 then return false end
 		if fil[1] ~= -1 then seg2 = fs.segments(newpath) end
-		setval(seg, fat[1], nil)
-		setval(seg2, fat[1], fil)
-		if not setval(seg2, fat[1], fil) then return false end
+		oprval(seg, fat[1], nil)
+		oprval(seg2, fat[1], fil)
+		if not oprval(seg2, fat[1], fil) then return false end
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
 	end
@@ -476,7 +464,7 @@ function tapfat.proxy(address)
 			return nil, "bad file descriptor"
 		end
 		local fat = proxyObj.getTable()
-		local fil = getval(filedescript[fd].path, fat[1])
+		local fil = oprval(filedescript[fd].path, fat[1])
 		if not fil then filedescript[fd] = nil return nil, "bad file descriptor" end
 		if fil[1] == 0 or fil[1] < filedescript[fd].seek+1 then return nil end
 		if fil[1] >= filedescript[fd].seek+1 and fil[1] < filedescript[fd].seek+count then 
@@ -547,7 +535,7 @@ function tapfat.proxy(address)
 		if path == '' then return 0 end
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
-		local fil = getval(seg, fat[1])
+		local fil = oprval(seg, fat[1])
 		if not fil or fil[1] == -1 then return 0 end
 		return fil[1]
 	end
@@ -581,7 +569,7 @@ function tapfat.proxy(address)
 		if path == '' then return true end
 		local seg = fs.segments(path)
 		local fat = proxyObj.getTable()
-		local list = getval(seg, fat[1])
+		local list = oprval(seg, fat[1])
 		if list then return true else return list end
 	end
 	
@@ -600,7 +588,7 @@ function tapfat.proxy(address)
 		local fat = proxyObj.getTable()
 		if #fat[2] == 0 then return nil, "not enough space" end
 		local seg = filedescript[fd].path
-		local fil = getval(seg, fat[1])
+		local fil = oprval(seg, fat[1])
 		filedescript[fd].seek = filedescript[fd].seek + #data
 		if filedescript[fd].seek > fil[1] or #fil[3] == 0 then
 			fil[1] = fil[1] + #data
@@ -689,7 +677,7 @@ function tapfat.proxy(address)
 				curb = curb + 1 
 			end
 		end
-		setval(seg, fat[1], fil)
+		oprval(seg, fat[1], fil)
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
 	end
