@@ -243,7 +243,7 @@ local work = true
 local function upList(after)
   tapes = {}
   for fsys, path in fs.mounts() do
-	  if fsys.address:sub(-4) == '-tap' then table.insert(tapes, {fsys, path}) end
+	  if fsys.address:sub(-4) == '-tap' and path ~= '/' then table.insert(tapes, {fsys, path}) end
   end
   if #tapes == 0 then
 	  drawBack()
