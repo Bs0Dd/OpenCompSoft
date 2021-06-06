@@ -33,7 +33,7 @@ local function gettim()
 	return math.ceil(time)
 end
 
-local function oprval(ptab, filtab, val)
+local function oprval(ptab, filtab, wrt, val)
 	if #ptab < 1 then return filtab end
 	local i = 1
 	local scan = filtab
@@ -44,8 +44,12 @@ local function oprval(ptab, filtab, val)
 		scan = scan[ptab[i]]
 		i = i+1
 	end
-	if val == nil then return scan[ptab[i]]
+	if not wrt then return scan[ptab[i]] or false
 	else scan[ptab[i]] = val return true end
+end
+
+local function setval(ptab, filtab, val)
+	return oprval(ptab, filtab, true, val)
 end
 
 local function allocd(filtab, space)
@@ -72,7 +76,7 @@ local function mkrdir(ptab, filtab, num)
 	end
 	dir = oprval(checks, filtab)
 	if dir == false then
-		oprval(checks, filtab, {-1, gettim()})
+		setval(checks, filtab, {-1, gettim()})
 	end
 	return mkrdir(ptab, filtab, num+1)
 end
@@ -93,7 +97,7 @@ local function remdir(fil, fat, seg)
 			end
 		end
 	end
-	oprval(seg, fat[1], nil)
+	setval(seg, fat[1], nil)
 	return true
 end
 
@@ -240,6 +244,7 @@ function tapfat.proxy(address)
 			rawtm = tabsec:match("[^\0]+")
 		elseif tabsec:sub(3,4) == "\120\156" then
 			if not component.isAvailable('data') then error('inflate: Data card required') end
+			if not string.unpack then error('string.unpack: Lua 5.3 required') end
 			rawtm = component.data.inflate(string.unpack('s2', tabsec))
 		else
 			if not lzssdcom then error('LZSS decompression: Lua 5.3 required') end
@@ -260,6 +265,7 @@ function tapfat.proxy(address)
 			tstr = string.pack('s2', lzsscom(tstr))
 		elseif driveprops.tabcom == 2 then
 			if not component.isAvailable('data') then error('deflate: Data card required') end
+			if not string.pack then error('string.pack: Lua 5.3 required') end
 			tstr = string.pack('s2', component.data.deflate(tstr))
 		end
 		if #tstr > 8192 then return nil, 'Not enough space for FAT' end
@@ -381,12 +387,12 @@ function tapfat.proxy(address)
 							end
 						end
 					elseif #fat[2] == 0 then return nil, "not enough space" end
-					if not oprval(seg, fat[1], {0, gettim(), {}}) then return false end
+					if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
 				elseif mode == "a" or mode == "ab" then
 					local fildat = oprval(seg, fat[1])
 					local sz
 					if not fildat then
-						if not oprval(seg, fat[1], {0, gettim(), {}}) then return false end
+						if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
 					else sz = fildat[1]+1 end
 					filedescript[descrpt] = {
 						seek = sz,
@@ -420,7 +426,7 @@ function tapfat.proxy(address)
 			for _, block in pairs(fil[3]) do
 				table.insert(fat[2], block)
 			end
-			oprval(seg, fat[1], nil)
+			setval(seg, fat[1], nil)
 		end
 		table.sort(fat[2], custsr)
 		local curb = 1
@@ -448,9 +454,8 @@ function tapfat.proxy(address)
 		local fil2 = oprval(seg2, fat[1])
 		if not fil or fil2 then return false end
 		if fil[1] ~= -1 then seg2 = fs.segments(newpath) end
-		oprval(seg, fat[1], nil)
-		oprval(seg2, fat[1], fil)
-		if not oprval(seg2, fat[1], fil) then return false end
+		setval(seg, fat[1], nil)
+		if not setval(seg2, fat[1], fil) then return false end
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
 	end
@@ -677,7 +682,7 @@ function tapfat.proxy(address)
 				curb = curb + 1 
 			end
 		end
-		oprval(seg, fat[1], fil)
+		setval(seg, fat[1], fil)
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
 	end
