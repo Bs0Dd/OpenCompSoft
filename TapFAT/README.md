@@ -28,7 +28,7 @@ For basic needs, a standard table is sufficient, but if you want to store more f
 
 ## Installation
 
-1. Run Installer by command `pastebin run `
+1. Run Installer by command `pastebin run Tq3hbpaz`
 2. Install driver files
 3. Type `tfatinit` to initialize driver
 4. Drives will be mount as filesystems
