@@ -5,7 +5,7 @@ It supports booting from OpenOS-like file (`init.lua`) and MineOS-like file (`OS
 If the BIOS does not find a tape drive in the system, it will try to boot from standard devices.  
 Please note that FS is very slow, therefore the system will run very slowly.
 
-[![Video](https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/TapFAT/Pictures/driver.png)](https://www.youtube.com/watch?v=cBIY3tTLgQQ)
+[![Video](https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/TapFAT/Pictures/preview.png)](https://www.youtube.com/watch?v=cBIY3tTLgQQ)
 
 ## How to setup
 
