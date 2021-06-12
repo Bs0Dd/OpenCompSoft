@@ -7,10 +7,10 @@ Port by [Bs0Dd](https://github.com/Bs0Dd)
 
 ## Download
 
-* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standart version of library (31Kb)
+* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standart version of library (30Kb)
 
 
-* `pastebin get PqqutTfX /usr/lib/NyaDrMini.lua` to load a minified (but full-functional) version of library (13Kb)
+* `pastebin get PqqutTfX /usr/lib/NyaDrMini.lua` to load a minified (but full-functional) version of library (12Kb)
 
 ## API (based on ECS's docs)
 

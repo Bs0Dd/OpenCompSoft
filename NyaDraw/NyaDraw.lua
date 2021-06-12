@@ -1,4 +1,4 @@
---[[NyaDraw Graphic Engine v1.04 for OpenOS
+--[[NyaDraw Graphic Engine v1.05 for OpenOS
 	Standalone "Screen.lua" port from MineOS
 	More info on: https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md
 	2015-2021 - ECS: https://github.com/IgorTimofeev
@@ -7,6 +7,7 @@
 
 local unicode = require("unicode")
 local computer = require("computer")
+local bit32 = require("bit32")
 
 --------------------------------------------------------------------------------
 
@@ -98,8 +99,6 @@ end
 --------------------------------------------------------------------------------
 --AdvancedRead Subsystem (Ported by Bs()Dd)
 
-local bor, band, lshift, rshift
-
 local function fold(init, op, ...)
   local result = init
   local args = table.pack(...)
@@ -109,19 +108,11 @@ local function fold(init, op, ...)
   return result
 end
 
-if computer.getArchitecture and computer.getArchitecture() == "Lua 5.3" then --bit32 isn't exists in Lua 5.3, why?
-	bor, band, lshift, rshift = load([[local fold = ... return
-	function(...) return fold(0, function(a, b) return a | b end, ...) end,
-	function(...) return fold(0xFFFFFFFF, function(a, b) return a & b end, ...) end,
-	function(x, disp) return (x << disp) & 0xFFFFFFFF end,
-	function(x, disp) return (x >> disp) & 0xFFFFFFFF end]])(fold)
-else bor, band, lshift, rshift = bit32.bor, bit32.band, bit32.lshift, bit32.rshift end
-
 local function readUnicodeChar(file)
 	local byteArray = {string.byte(file:read(1))}
 	local nullBitPosition = 0
 	for i = 1, 7 do
-		if band(rshift(byteArray[1], 8 - i), 0x1) == 0x0 then
+		if bit32.band(bit32.rshift(byteArray[1], 8 - i), 0x1) == 0x0 then
 			nullBitPosition = i
 			break
 		end
@@ -135,7 +126,7 @@ end
 local function readBytes(file, count)
 	local bytes, result = {string.byte(file:read(count) or "\x00", 1, 8)}, 0
 	for i = 1, #bytes do
-		result = bor(lshift(result, 8), bytes[i])
+		result = bit32.bor(bit32.lshift(result, 8), bytes[i])
 	end
 	return result
 end
