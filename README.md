@@ -2,6 +2,9 @@
 Some Lua software for OpenComputers
 
 **Programs**
+* `Openfetch` - Neofetch-like utility for OpenComputers
+   Get : `pastebin get HY0muRMP openfetch.lua`
+
 * `OpenWebNet` - In-world network protocol for web pages and content sharing  
    Developing freezed
 
@@ -12,6 +15,9 @@ Some Lua software for OpenComputers
 * `Midday Commander Plus` - NC-style file manager, fork from [original MC](https://github.com/OpenPrograms/OpenPrograms.ru/tree/master/mc)
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/MiddayCommanderPlus/README.md)
+* `VychVyzhProm` - ported version of [this game](https://github.com/cat-in-the-dark/ludum_45_omsk)
+
+   See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/VychVyzhProm/README.md)
 * `Memphisto` - Web browser for special NFP pages
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/Memphisto/README.md)
