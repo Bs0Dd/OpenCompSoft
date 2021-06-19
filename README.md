@@ -2,9 +2,9 @@
 Some Lua software for OpenComputers
 
 **Programs**
-* `Openfetch` - Neofetch-like utility for OpenComputers
-   Get : `pastebin get HY0muRMP openfetch.lua`
+* `Openfetch` - Neofetch-like utility for OpenComputers  
 
+   Get : `pastebin get HY0muRMP openfetch.lua`
 * `OpenWebNet` - In-world network protocol for web pages and content sharing  
    Developing freezed
 
