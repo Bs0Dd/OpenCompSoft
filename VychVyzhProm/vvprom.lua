@@ -76,6 +76,7 @@ local comlogo = engine.loadImage("Pictures/comlogo.pic")
 local infoic = engine.loadImage("Pictures/info.pic")
 local helpic = engine.loadImage("Pictures/help.pic")
 local exitic = engine.loadImage("Pictures/exit.pic")
+local contric = engine.loadImage("Pictures/controls.pic")
 
 local vyzhCur
 local frOp, frRun = true, true
@@ -145,14 +146,6 @@ local function msgBox(contls, btok, tabl, hlt)
 			if touch >= x+bcor and touch <= x+bcor+ulen(btok)-1 and key == y+H-2 then return end
 		end
 	end
-end
-
-local function about()
-	msgBox(locale.aboutText or {tmissing}, locale.close or tmissing)
-end
-
-local function help()
-	msgBox(locale.helpText or {tmissing}, locale.close or tmissing)
 end
 
 local function qHelp()
@@ -267,6 +260,7 @@ local function drawMenu()
 	engine.drawRectangle(1, 45, 160, 6, 0xFFFFFF, 0xFFFFFF, " ")
 	engine.drawImage(4, 2, infoic)
 	engine.drawImage(150, 2, helpic)
+	engine.drawImage(4, 46, contric)
 	engine.drawImage(150, 46, exitic)
 end
 
@@ -297,9 +291,9 @@ local function drawCmdBut()
 	drawSmBut(106, 72, "J =")
 	drawSmBut(118, 72, "J <")
 	drawSmBut(130, 72, "JMP")
-	drawSmBut(82, 78, "▲⠘⡟")
-	drawSmBut(94, 78, "▼⠘⡟")
-	drawSmBut(106, 78, "▶⠘⡟")
+	drawSmBut(82, 78, "↑⠘⡟")
+	drawSmBut(94, 78, "↓⠘⡟")
+	drawSmBut(106, 78, "→⠘⡟")
 end
 
 local function drawNumBut()
@@ -612,7 +606,7 @@ local function editor()
 				cmdCur[sOpY][sOpX] = 'CMP' sOpX = sOpX+1
 			elseif key == 34 and sOpX == 1 then
 				cmdCur[sOpY][sOpX] = 'JG ' sOpX = sOpX+1
-			elseif key == 19 and sOpX == 1 then
+			elseif key == 18 and sOpX == 1 then
 				cmdCur[sOpY][sOpX] = 'JE ' sOpX = sOpX+1
 			elseif key == 38 and sOpX == 1 then
 				cmdCur[sOpY][sOpX] = 'JL ' sOpX = sOpX+1
@@ -810,8 +804,15 @@ while work do
 	if typ == "key_down" then
 		if key == 203 or key == 205 then opt = not opt
 		elseif key == 16 then work = false
-		elseif key == 23 then about() drawMenu()
-		elseif key == 35 then help() drawMenu()
+		elseif key == 23 then 
+			msgBox(locale.aboutText or {tmissing}, locale.close or tmissing)
+			drawMenu()
+		elseif key == 35 then 
+			msgBox(locale.helpText or {tmissing}, locale.close or tmissing)
+			drawMenu()
+		elseif key == 46 then 
+			msgBox(locale.contrText or {tmissing}, locale.close or tmissing)
+			drawMenu()
 		elseif key == 28 then
 			if opt then 
 				local stat = editor()
@@ -827,9 +828,14 @@ while work do
 			msgBox({locale.taskCapt or tmissing}, locale.ok or tmissing, tsk)
 			drawMenu()
 		elseif touch >= 4 and touch <= 11 and key >= 2 and key <= 5 then
-			about() drawMenu()
+			msgBox(locale.aboutText or {tmissing}, locale.close or tmissing)
+			drawMenu()
+		elseif touch >= 4 and touch <= 11 and key >= 46 and key <= 49 then
+			msgBox(locale.contrText or {tmissing}, locale.close or tmissing)
+			drawMenu()
 		elseif touch >= 150 and touch <= 157 and key >= 2 and key <= 5 then
-			help() drawMenu()
+			msgBox(locale.helpText or {tmissing}, locale.close or tmissing)
+			drawMenu()
 		elseif touch >= 150 and touch <= 157 and key >= 46 and key <= 49 then
 			work = false
 		end

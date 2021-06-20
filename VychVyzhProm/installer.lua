@@ -60,6 +60,10 @@ local files = {
 		path = "/home/vvprom/Pictures/info.pic"
 	},
 	{
+		url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/Pictures/controls.pic",
+		path = "/home/vvprom/Pictures/controls.pic"
+	},
+	{
 		url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/Pictures/task.pic",
 		path = "/home/vvprom/Pictures/task.pic"
 	},
