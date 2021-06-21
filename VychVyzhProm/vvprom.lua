@@ -187,11 +187,11 @@ local function loadTsk()
 	local rawf, why = io.open('Tasks/task'..taskNum..'.vtf')
 	if not rawf then
 		if taskNum == 1 then
-		gpu.setForeground(0xFFFFFF)
-		gpu.setBackground(0x000000)
-		term.clear()
-		io.stderr:write("Error: Can't open first task file: "..(why or "unknown reason").."\n")
-		os.exit()
+			gpu.setForeground(0xFFFFFF)
+			gpu.setBackground(0x000000)
+			term.clear()
+			io.stderr:write("Error: Can't open first task file: "..(why or "unknown reason").."\n")
+			os.exit()
 		else
 			return false
 		end
