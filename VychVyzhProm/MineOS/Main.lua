@@ -17,10 +17,8 @@ if gpu.maxDepth() < 8 then
 	GUI.alert("Error: Your graphics card or monitor doesn't support 256 colors")
 	return
 end
-
-
-gpu.setResolution(160, 50)
 gpu.setDepth(8)
+engine.setResolution(160, 50)
 
 local locale = sys.getCurrentScriptLocalization()
 
