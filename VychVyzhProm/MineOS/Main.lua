@@ -697,6 +697,7 @@ local function checkRes(stat)
 		totalInst = totalInst + #cmdCur
 		if locale.taskSolved then locale.taskSolved[3] = tostring(#cmdCur) end
 		if not loadTsk() then
+			if work == false then return end
 			if locale.taskSolved then table.remove(locale.taskSolved) table.remove(locale.taskSolved) end
 			msgBox(locale.taskSolved or {tmissing}, locale.ok or tmissing, nil, true)
 			engine.drawRectangle(1, 1, 160, 50, 0xA5A5A5, 0xA5A5A5, " ")
