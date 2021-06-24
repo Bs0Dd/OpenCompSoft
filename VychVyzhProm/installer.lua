@@ -13,7 +13,7 @@ print('Copyright (C) 2019 CAT IN THE DARK')
 print('Copyright (C) 2021 Compys S&N Systems')
 print('For more information go to: https://github.com/Bs0Dd/OpenCompSoft/blob/master/VychVyzhProm/README.md\n')
 
-print('Do you want to install TapFAT? Y/N')
+print('Do you want to install VychVyzhProm? Y/N')
 		while true do
 			local _, _, _, key = event.pull("key_up")
 			if key == 21 then break
