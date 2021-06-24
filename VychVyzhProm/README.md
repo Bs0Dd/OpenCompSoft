@@ -16,7 +16,7 @@ Due to technical limitations, the game was slightly simplified in interface, but
 Special thanks to [BOOtak](https://github.com/BOOtak) for a little help with graphics and testing.
 
 ## Install
-Write to console: `pastebin run `
+Write to console: `pastebin run nw0FNGjr`
 
 ## Minimal requirements
 * **Video card** and **Monitor** - Tier 3 (160x50 symbols, 256 colors)
