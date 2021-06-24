@@ -1,4 +1,4 @@
---[[NyaDraw Graphic Engine v1.05 for OpenOS
+--[[NyaDraw Graphic Engine v1.06 for OpenOS
 	Standalone "Screen.lua" port from MineOS
 	More info on: https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md
 	2015-2021 - ECS: https://github.com/IgorTimofeev
@@ -88,8 +88,9 @@ else
 	colorBlend = function(color1, color2, transparency)
 		local invertedTransparency = 1 - transparency
 		local r1, r2 = color1 / 65536, color2 / 65536
+		r1, r2 = r1 - r1 % 1, r2 - r2 % 1
 		local g1, g2 = (color1 - r1 * 65536) / 256, (color2 - r2 * 65536) / 256
-		r1, r2, g1, g2 = r1 - r1 % 1, r2 - r2 % 1, g1 - g1 % 1, g2 - g2 % 1
+		g1, g2 = g1 - g1 % 1, g2 - g2 % 1
 		local r, g, b = r2 * invertedTransparency + r1 * transparency, g2 * invertedTransparency + g1 * transparency,
 			(color2 - r2 * 65536 - g2 * 256) * invertedTransparency + (color1 - r1 * 65536 - g1 * 256) * transparency
 		return (r - r % 1) * 65536 + (g - g % 1) * 256 + (b - b % 1)
