@@ -1,4 +1,4 @@
---[[Compys(TM) TapFAT Tape Configuration Tool v1.01
+--[[Compys(TM) TapFAT Tape Configuration Tool v1.05
 	2021 (C) Compys S&N Systems
 	This is a tool for do some manipulations with TapFAT tapes
 	Please, load "tfatinit" driver firstly
@@ -222,7 +222,7 @@ local function drawBack()
 	local posx = math.ceil((cx+42)/2)
 	local y = math.ceil(cy/10)
 	gpu.set(x, y  , ' ╔══════════════════════════════════════╗ ')
-	gpu.set(x, y+1, ' ║ TapFAT Tape Configuration Tool v1.01 ║ ')
+	gpu.set(x, y+1, ' ║ TapFAT Tape Configuration Tool v1.05 ║ ')
 	gpu.set(x, y+2, ' ║      2021  © Compys S&N Systems      ║ ')
 	gpu.set(x, y+3, ' ╚══════════════════════════════════════╝ ')
 	if gpu.maxDepth() > 1 then
@@ -354,11 +354,12 @@ while work do
 			  if not pcall(workwith.getTable) then
 			    Dialog(false, false, alarmcl, {'Tape unformatted or FAT is corrupted!', 'Please use "Quick format" to remake table.'}, nil)
 			  else
+				local spacus, spacto = workwith.spaceUsed(), workwith.spaceTotal()
 			    local info = {left = true}
 			    info[1] = 'Label: '..(workwith.getLabel() == '' and '<No Label>' or workwith.getLabel())
-			    info[2] = 'Tape type: '..math.ceil((workwith.spaceTotal()+8192)/245760)..' Min'
-			    info[3] = 'Effective size: '..formatSize(workwith.spaceTotal())
-			    info[4] = 'Free: '..formatSize(workwith.spaceTotal()-workwith.spaceUsed())..' ('..100-math.ceil((workwith.spaceUsed()/workwith.spaceTotal() * 100))..'%)'
+			    info[2] = 'Tape type: '..math.ceil((spacto+8192)/245760)..' Min'
+			    info[3] = 'Effective size: '..formatSize(spacto)
+			    info[4] = 'Free: '..formatSize(spacto-spacus)..' ('..100-math.ceil((spacus/spacto * 100))..'%)'
 			    info[5] = 'Mounted to: '..mnt
 			    info[6] = ''
 			    Dialog(false, false, normcol, info, nil)

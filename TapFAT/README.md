@@ -4,6 +4,8 @@ TapFAT - Filesystem for cassettes from the Computronics mod.
 With it, you can use the cassette as a storage device like a hard disk or a floppy disk.  
 Please note that FS is very slow and was intended as a means of archiving files to tape.
 
+**WARNING!!! Version 1.05 is incompatible with 1.01, so before updating, you should transfer the data from the cassettes and then format them with the new version.**
+
 ## Disclaimer
 
 **WARNING!!! The filesystem is a very complex thing. Although I have tried to catch most of the bugs, their complete absence is not guaranteed. Therefore, I am not responsible for damage to files on the cassette, you act at your own peril and risk.**
@@ -106,3 +108,13 @@ Sets the new value for the drive property, if it exists.
 ## DiskTape Lua BIOS
 
 Read [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/TapFAT/DiskTape/README.md).
+
+## Changelog
+
+* Version 1.05
+	* First version for MineOS
+	* Changed file blocks structure, so **this version is not compatible with the previous one**.
+	* Fixed critical bug in drive properties.
+	* Some small fixes.
+* Version 1.01
+	* First public version.

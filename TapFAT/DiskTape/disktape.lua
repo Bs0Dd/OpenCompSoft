@@ -23,7 +23,7 @@ local function fb(b, p)
 	while i < #b do
 		i = i+1
 		local d = z
-		z = z + (b[i][2] - b[i][1])
+		z = z + b[i][2]
 		if d <= p and z >= p then return i end
 	end
 	return false
@@ -32,7 +32,7 @@ end
 local function bs(f, l, i)
 	local z = 0
 	while f <= l do
-		z = z + (i[3][f][2] - i[3][f][1])
+		z = z + i[3][f][2]
 		f = f+1
 	end
 	return z
@@ -60,17 +60,17 @@ local function gb(ad)
 		local ft = gt(ad)
 		local f = ft[1]['bootldr.sys']
 		if not f then error("File bootldr.sys is not found", 0) end
-		if f[1] == 0 then error("Incorrect bootldr.sys", 0) end
+		if f[1] == 0 then error("Empty bootldr.sys", 0) end
 		ci(ad, "seek", -math.huge)
 		local sb, eb = fb(f[3], 0), fb(f[3], 0 + f[1]-1)
 		if not eb then eb = #f[3] end
 		ci(ad, "seek", f[3][sb][1]-bs(1, sb-1, f))
-		local dt = ci(ad, "read", f[3][sb][2] - f[3][sb][1])
+		local dt = ci(ad, "read", f[3][sb][2])
 		sb = sb + 1
 		while sb < eb + 1 do
 			ci(ad, "seek", -math.huge)
 			ci(ad, "seek", f[3][sb][1])
-			dt = dt..ci(ad, "read", f[3][sb][2] - f[3][sb][1])
+			dt = dt..ci(ad, "read", f[3][sb][2])
 			sb = sb + 1 
 		end
 		dt = dt:sub(0, f[1])

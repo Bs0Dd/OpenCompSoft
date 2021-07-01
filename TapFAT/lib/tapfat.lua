@@ -1,4 +1,4 @@
---[[Compys(TM) TapFAT Shared Library v1.01
+--[[Compys(TM) TapFAT Shared Library v1.05
 	2021 (C) Compys S&N Systems
 	This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
 	With this system you can use Computronics Tapes as a file storage like Floppy
@@ -13,7 +13,6 @@ local ser = sz.serialize
 local unser = sz.unserialize
 
 local filedescript = {}
-local driveprops = {tabcom = false, stordate = true}
 
 local function copytb(source)
 	local result = {}
@@ -23,7 +22,7 @@ local function copytb(source)
 	return result
 end
 
-local function gettim()
+local function gettim(driveprops)
 	if not driveprops.stordate then return 0 end
 	local name = '/tmp/lt'
 	local f = io.open(name, "w")
@@ -76,7 +75,7 @@ local function mkrdir(ptab, filtab, num)
 	end
 	dir = oprval(checks, filtab)
 	if dir == false then
-		setval(checks, filtab, {-1, gettim()})
+		setval(checks, filtab, {-1, gettim(driveprops)})
 	end
 	return mkrdir(ptab, filtab, num+1)
 end
@@ -107,7 +106,7 @@ local function findblock(blocks, pos)
 	while i < #blocks do
 		i = i+1
 		local psiz = bsiz
-		bsiz = bsiz + (blocks[i][2] - blocks[i][1])
+		bsiz = bsiz + blocks[i][2]
 		if psiz <= pos and bsiz >= pos then return i end
 	end
 	return false
@@ -116,7 +115,7 @@ end
 local function blockssiz(fb, lb, fil)
 	local bsiz = 0
 	while fb <= lb do
-		bsiz = bsiz + (fil[3][fb][2] - fil[3][fb][1])
+		bsiz = bsiz + fil[3][fb][2]
 		fb = fb+1
 	end
 	return bsiz
@@ -125,6 +124,49 @@ end
 local function custsr(a, b)
 	if a[1] < b[1] then return true
 	else return false end
+end
+
+local function wrinew(fil, fat, stb, data, address)
+	while true do
+		if #fat[2] == 0 then
+			fil[1] = blockssiz(1, #fil[3], fil)
+			local res, err = stb(fat)
+			if not res then return res, err else return true end
+		elseif fat[2][1][2] < #data then
+			table.insert(fil[3], {fat[2][1][1], fat[2][1][2]})
+			component.invoke(address, "seek", -math.huge)
+			component.invoke(address, "seek", fat[2][1][1])
+			component.invoke(address, "write", data:sub(0,fat[2][1][2]))
+			data = data:sub(fat[2][1][2]+1)
+			table.remove(fat[2], 1)
+		else
+			table.insert(fil[3], {fat[2][1][1], #data})
+			component.invoke(address, "seek", -math.huge)
+			component.invoke(address, "seek", fat[2][1][1])
+			component.invoke(address, "write", data)
+			if #data == fat[2][1][2] then table.remove(fat[2], 1)
+			else fat[2][1][1] = fat[2][1][1]+#data fat[2][1][2] = fat[2][1][2]-#data end
+			break
+		end
+	end
+	return 1
+end
+
+local function wrialloc(fil, data, address, seek)
+	local strtbl = findblock(fil[3], seek)
+	local endbl = #fil[3]
+	if not endbl then endbl = #fil[3] end
+	component.invoke(address, "seek", fil[3][strtbl][1]+seek-blockssiz(1, strtbl-1, fil))
+	component.invoke(address, "write", data:sub(0,fil[3][strtbl][2]))
+	data = data:sub(fil[3][strtbl][2])
+	strtbl = strtbl + 1
+	while strtbl < endbl + 1 do
+		component.invoke(address, "seek", -math.huge)
+		component.invoke(address, "seek", fil[3][strtbl][1])
+		component.invoke(address, "write", data:sub(0,fil[3][strtbl][2]))
+		data = data:sub(fil[3][strtbl][2])
+		strtbl = strtbl + 1 
+	end
 end
 
 local lzsscom, lzssdcom
@@ -211,10 +253,11 @@ function tapfat.proxy(address)
 	if not found then
 		error("No such component",2)
 	end
-	local label
+	local driveprops = {tabcom = false, stordate = true}
 	component.invoke(address, "seek", -math.huge)
 	local proxyObj = {}
 	proxyObj.type = "filesystem"
+	proxyObj.driveAddress = address
 	proxyObj.address = address:gsub("-","") .. "-tap"
 	
 	proxyObj.isReady = function()
@@ -287,7 +330,7 @@ function tapfat.proxy(address)
 				component.invoke(address, "write", ns)
 			end
 		end
-		local res, err = proxyObj.setTable({{}, {{8192, math.ceil(siz)-1}}})
+		local res, err = proxyObj.setTable({{}, {{8192, math.ceil(siz)-8192}}})
 		if not res then return res, err else return true end
 	end
 	
@@ -379,20 +422,20 @@ function tapfat.proxy(address)
 						table.sort(fat[2], custsr)
 						local curb = 1
 						while curb < #fat[2] do
-							if fat[2][curb][2] == fat[2][curb+1][1] then
-								fat[2][curb][2] = fat[2][curb+1][2]
+							if fat[2][curb][1]+fat[2][curb][2] == fat[2][curb+1][1] then
+								fat[2][curb][2] = fat[2][curb][2]+fat[2][curb+1][2]
 								table.remove(fat[2], curb+1)
 							else
 								curb = curb + 1 
 							end
 						end
 					elseif #fat[2] == 0 then return nil, "not enough space" end
-					if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+					if not setval(seg, fat[1], {0, gettim(driveprops), {}}) then return false end
 				elseif mode == "a" or mode == "ab" then
 					local fildat = oprval(seg, fat[1])
 					local sz
 					if not fildat then
-						if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+						if not setval(seg, fat[1], {0, gettim(driveprops), {}}) then return false end
 					else sz = fildat[1]+1 end
 					filedescript[descrpt] = {
 						seek = sz,
@@ -431,8 +474,8 @@ function tapfat.proxy(address)
 		table.sort(fat[2], custsr)
 		local curb = 1
 		while curb < #fat[2] do
-			if fat[2][curb][2] == fat[2][curb+1][1] then
-				fat[2][curb][2] = fat[2][curb+1][2]
+			if fat[2][curb][1]+fat[2][curb][2] == fat[2][curb+1][1] then
+				fat[2][curb][2] = fat[2][curb][2]+fat[2][curb+1][2]
 				table.remove(fat[2], curb+1)
 			else
 				curb = curb + 1 
@@ -480,12 +523,12 @@ function tapfat.proxy(address)
 		local endbl = findblock(fil[3], filedescript[fd].seek + count)
 		if not endbl then endbl = #fil[3] end
 		component.invoke(address, "seek", fil[3][strtbl][1]+filedescript[fd].seek-blockssiz(1, strtbl-1, fil))
-		local data = component.invoke(address, "read", fil[3][strtbl][2] - fil[3][strtbl][1])
+		local data = component.invoke(address, "read", fil[3][strtbl][2])
 		strtbl = strtbl + 1
 		while strtbl < endbl + 1 do
 			component.invoke(address, "seek", -math.huge)
 			component.invoke(address, "seek", fil[3][strtbl][1])
-			data = data..component.invoke(address, "read", fil[3][strtbl][2] - fil[3][strtbl][1])
+			data = data..component.invoke(address, "read", fil[3][strtbl][2])
 			strtbl = strtbl + 1 
 		end
 		data = data:sub(0, count)
@@ -597,86 +640,20 @@ function tapfat.proxy(address)
 		filedescript[fd].seek = filedescript[fd].seek + #data
 		if filedescript[fd].seek > fil[1] or #fil[3] == 0 then
 			fil[1] = fil[1] + #data
-			while true do
-				if #fat[2] == 0 then
-					fil[1] = blockssiz(1, #fil[3], fil)
-					local res, err = proxyObj.setTable(fat)
-					if not res then return res, err else return true end
-				elseif fat[2][1][2] - fat[2][1][1] < #data then
-					table.insert(fil[3], {fat[2][1][1], fat[2][1][2]})
-					component.invoke(address, "seek", -math.huge)
-					component.invoke(address, "seek", fat[2][1][1])
-					component.invoke(address, "write", data:sub(0,fat[2][1][2]-fat[2][1][1]))
-					data = data:sub(fat[2][1][2]-fat[2][1][1]+1)
-					table.remove(fat[2], 1)
-				else
-					table.insert(fil[3], {fat[2][1][1], fat[2][1][1]+#data})
-					component.invoke(address, "seek", -math.huge)
-					component.invoke(address, "seek", fat[2][1][1])
-					component.invoke(address, "write", data)
-					if fat[2][1][1]+#data == fat[2][1][2] then table.remove(fat[2], 1)
-					else fat[2][1][1] = fat[2][1][1]+#data end
-					break
-				end
-			end
+			local res, err = wrinew(fil, fat, proxyObj.setTable, data, address)
+			if not res then return res, err elseif res ~= 1 then return true end
 		elseif filedescript[fd].seek + #data > fil[1] then
 			fil[1] = filedescript[fd].seek + #data
-			local strtbl = findblock(fil[3], filedescript[fd].seek)
-			local endbl = #fil[3]
-			if not endbl then endbl = #fil[3] end
-			component.invoke(address, "seek", fil[3][strtbl][1]+filedescript[fd].seek-blockssiz(1, strtbl-1, fil))
-			component.invoke(address, "write", data:sub(0,fil[3][strtbl][2] - fil[3][strtbl][1]))
-			data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1])
-			strtbl = strtbl + 1
-			while strtbl < endbl + 1 do
-				component.invoke(address, "seek", -math.huge)
-				component.invoke(address, "seek", fil[3][strtbl][1])
-				component.invoke(address, "write", data:sub(0,fil[3][strtbl][2] - fil[3][strtbl][1]))
-				data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1]+1)
-				strtbl = strtbl + 1 
-			end
-			while true do
-				if #fat[2] == 0 then
-					fil[1] = blockssiz(1, #fil[3], fil)
-					local res, err = proxyObj.setTable(fat)
-					if not res then return res, err else return true end
-				elseif fat[2][1][2] - fat[2][1][1] < #data then
-					table.insert(fil[3], {fat[2][1][1], fat[2][1][2]})
-					component.invoke(address, "seek", -math.huge)
-					component.invoke(address, "seek", fat[2][1][1])
-					component.invoke(address, "write", data:sub(0,fat[2][1][2]-fat[2][1][1]))
-					data = data:sub(fat[2][1][2]-fat[2][1][1]+1)
-					table.remove(fat[2], 1)
-				else
-					table.insert(fil[3], {fat[2][1][1], fat[2][1][1]+#data})
-					component.invoke(address, "seek", -math.huge)
-					component.invoke(address, "seek", fat[2][1][1])
-					component.invoke(address, "write", data)
-					if fat[2][1][1]+#data == fat[2][1][2] then table.remove(fat[2], 1)
-					else fat[2][1][1] = fat[2][1][1]+#data end
-					break
-				end
-			end
+			wrialloc(fil, data, address, filedescript[fd].seek)
+			local res, err = wrinew(fil, fat, proxyObj.setTable, data, address)
+			if not res then return res, err elseif res ~= 1 then return true end
 		else
-			local strtbl = findblock(fil[3], filedescript[fd].seek)
-			local endbl = findblock(fil[3], filedescript[fd].seek + #data)
-			if not endbl then endbl = #fil[3] end
-			component.invoke(address, "seek", fil[3][strtbl][1]+filedescript[fd].seek-blockssiz(1, strtbl-1, fil))
-			component.invoke(address, "write", data:sub(0,fil[3][strtbl][2] - fil[3][strtbl][1]))
-			data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1])
-			strtbl = strtbl + 1
-			while strtbl < endbl + 1 do
-				component.invoke(address, "seek", -math.huge)
-				component.invoke(address, "seek", fil[3][strtbl][1])
-				component.invoke(address, "write", data:sub(0,fil[3][strtbl][2] - fil[3][strtbl][1]))
-				data = data:sub(fil[3][strtbl][2] - fil[3][strtbl][1]+1)
-				strtbl = strtbl + 1 
-			end
+			wrialloc(fil, data, address, filedescript[fd].seek)
 		end
 		local curb = 1
 		while curb < #fil[3] do
-			if fil[3][curb][2] == fil[3][curb+1][1] then
-				fil[3][curb][2] = fil[3][curb+1][2]
+			if fil[3][curb][1]+fil[3][curb][2] == fil[3][curb+1][1] then
+				fil[3][curb][2] = fil[3][curb][2]+fil[3][curb+1][2]
 				table.remove(fil[3], curb+1)
 			else
 				curb = curb + 1 
@@ -689,4 +666,5 @@ function tapfat.proxy(address)
 	
 	return proxyObj
 end
+
 return tapfat

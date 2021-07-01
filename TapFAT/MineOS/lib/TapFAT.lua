@@ -1,19 +1,15 @@
-local computer = computer
-local component = component
-local unicode = unicode
-local filedescript = {}
-local driveprops = {tabcom = false, stordate = true}
-local ramdisk
+--[[Compys(TM) TapFAT Shared Library v1.05 for MineOS
+	2021 (C) Compys S&N Systems
+	This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
+	With this system you can use Computronics Tapes as a file storage like Floppy
+	The first 8Kb of a space is reserved for special FAT with info about files on tape
+	Data fragmentation is supported to more effective space allocation on a tape
+]]
+local component = require("component")
+local fs = require("filesystem")
+local sz = require("text")
 
-for k in component.list('filesystem') do
-	local fs = component.proxy(k)
-	if fs.getLabel() == 'tmpfs' then
-		ramdisk = fs
-		break
-	end
-end
-
-local function ser(value)
+local ser = function(value)
   local id = "^[%a_][%w_]*$"
   local ts = {}
   local result_pack = {}
@@ -75,25 +71,9 @@ local function ser(value)
   return result
 end
 
-local function unser(data)
-  local result, reason = load("return " .. data, "=data", nil, {math={huge=math.huge}})
-  if not result then
-    return nil, reason
-  end
-  local ok, output = pcall(result)
-  if not ok then
-    return nil, output
-  end
-  return output
-end
+local unser = sz.deserialize
 
-local function copytb(source)
-	local result = {}
-	for k, p in pairs(source) do
-		result[k] = p
-	end
-	return result
-end
+local filedescript = {}
 
 local function segments(path)
   local parts = {}
@@ -110,22 +90,21 @@ local function segments(path)
   return parts
 end
 
-local function canonical(path)
-  local result = table.concat(segments(path), "/")
-  if unicode.sub(path, 1, 1) == "/" then
-    return "/" .. result
-  else
-    return result
-  end
+local function copytb(source)
+	local result = {}
+	for k, p in pairs(source) do
+		result[k] = p
+	end
+	return result
 end
 
-local function gettim()
+local function gettim(driveprops)
 	if not driveprops.stordate then return 0 end
-	local name = 'lt'
-	local f = ramdisk.open(name, "w")
-	ramdisk.close(f)
-	local time = ramdisk.lastModified(name)
-	ramdisk.remove(name)
+	local name = '/Temporary/lt'
+	local f = fs.open(name, "w")
+	f:close()
+	local time = fs.lastModified(name)
+	fs.remove(name)
 	return math.ceil(time)
 end
 
@@ -172,7 +151,7 @@ local function mkrdir(ptab, filtab, num)
 	end
 	dir = oprval(checks, filtab)
 	if dir == false then
-		setval(checks, filtab, {-1, gettim()})
+		setval(checks, filtab, {-1, gettim(driveprops)})
 	end
 	return mkrdir(ptab, filtab, num+1)
 end
@@ -267,8 +246,75 @@ local function wrialloc(fil, data, address, seek)
 end
 
 local lzsscom, lzssdcom
-if computer.getArchitecture() == "Lua 5.3" then
-	lzsscom, lzssdcom = load([[return function(a)local b,c=1,{}local d=''local function e()for f=18,3,-1 do local g=string.sub(a,b,b+f-1)local h=string.find(d,g,1,true)if h then return h,g end end end;while b<=#a do local i,j=0,{}for f=0,7 do if b<=#a then local h,g=e()if h and#g>=3 then local k=h-1<<4|#g-3;j[#j+1]=string.pack('>I2',k)else i=i|(1<<f)g=string.sub(a,b,b)j[#j+1]=g end;d=string.sub(d..g,-4096)b=b+#g else break end end;if#j>0 then c[#c+1]=string.char(i)c[#c+1]=table.concat(j)end end;return table.concat(c)end,function(a)local b,c=1,{}local d=''while b<=#a do local i=string.byte(a,b)b=b+1;for f=1,8 do local g=nil;if i&1~=0 then if b<=#a then g=string.sub(a,b,b)b=b+1 end else if b+1<=#a then local k=string.unpack('>I2',a,b)b=b+2;local h=k>>4+1;local l=k&15+3;g=string.sub(d,h,h+l-1)end end;i=i>>1;if g then c[#c+1]=g;d=string.sub(d..g,-4096)end end end;return table.concat(c)end]])()
+if require("computer").getArchitecture() == "Lua 5.3" then
+	lzsscom, lzssdcom = load([[return function(input)
+  local offset, output = 1, {}
+  local window = ''
+  local function search()
+    for i = 18, 3, -1 do
+      local str = string.sub(input, offset, offset + i - 1)
+      local pos = string.find(window, str, 1, true)
+      if pos then
+        return pos, str
+      end
+    end
+  end
+  while offset <= #input do
+    local flags, buffer = 0, {}
+    for i = 0, 7 do
+      if offset <= #input then
+        local pos, str = search()
+        if pos and #str >= 3 then
+          local tmp = ((pos - 1) << 4) | (#str - 3)
+          buffer[#buffer + 1] = string.pack('>I2', tmp)
+        else
+          flags = flags | (1 << i)
+          str = string.sub(input, offset, offset)
+          buffer[#buffer + 1] = str
+        end
+        window = string.sub(window .. str, -4096)
+        offset = offset + #str
+      else
+        break
+      end
+    end
+    if #buffer > 0 then
+      output[#output + 1] = string.char(flags)
+      output[#output + 1] = table.concat(buffer)
+    end
+  end
+  return table.concat(output)
+end, function(input)
+  local offset, output = 1, {}
+  local window = ''
+  while offset <= #input do
+    local flags = string.byte(input, offset)
+    offset = offset + 1
+    for i = 1, 8 do
+      local str = nil
+      if (flags & 1) ~= 0 then
+        if offset <= #input then
+          str = string.sub(input, offset, offset)
+          offset = offset + 1
+        end
+      else
+        if offset + 1 <= #input then
+          local tmp = string.unpack('>I2', input, offset)
+          offset = offset + 2
+          local pos = (tmp >> 4) + 1
+          local len = (tmp & (15)) + 3
+          str = string.sub(window, pos, pos + len - 1)
+        end
+      end
+      flags = flags >> 1
+      if str then
+        output[#output + 1] = str
+        window = string.sub(window .. str, -4096)
+      end
+    end
+  end
+  return table.concat(output)
+end]])()
 end
 
 local tapfat = {}
@@ -283,10 +329,11 @@ function tapfat.proxy(address)
 	if not found then
 		error("No such component",2)
 	end
-	local label
+	local driveprops = {tabcom = false, stordate = true}
 	component.invoke(address, "seek", -math.huge)
 	local proxyObj = {}
 	proxyObj.type = "filesystem"
+	proxyObj.driveAddress = address
 	proxyObj.address = address:gsub("-","") .. "-tap"
 	
 	proxyObj.isReady = function()
@@ -308,36 +355,36 @@ function tapfat.proxy(address)
 	end
 	
 	proxyObj.getTable = function()
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		component.invoke(address, "seek", -math.huge)
 		local tabsec = component.invoke(address, "read", 8192)
 		local rawtm
 		if tabsec:sub(0,2) == "{{" then
 			rawtm = tabsec:match("[^\0]+")
 		elseif tabsec:sub(3,4) == "\120\156" then
-			if not component.isAvailable('data') then error('inflate: Data card required',0) end
-			if not string.unpack then error('string.unpack: Lua 5.3 required',0) end
+			if not component.isAvailable('data') then return nil, 'inflate: Data card required' end
+			if not string.unpack then return nil, 'string.unpack: Lua 5.3 required' end
 			rawtm = component.data.inflate(string.unpack('s2', tabsec))
 		else
-			if not lzssdcom then error('LZSS decompression: Lua 5.3 required',0) end
+			if not lzssdcom then return nil, 'LZSS decompression: Lua 5.3 required' end
 			rawtm = lzssdcom(string.unpack('s2', tabsec))
 		end
-		if not rawtm or rawtm == "" then error('FAT corrupted: table not found',0) end
+		if not rawtm or rawtm == "" then return nil, 'FAT corrupted: table not found' end
 		local uns, err = unser(rawtm)
-		if not uns then error('FAT corrupted: '..(err or 'unknown reason'),0)
+		if not uns then return nil, 'FAT corrupted: '..(err or 'unknown reason')
 		else return uns end
 	end
 	
 	proxyObj.setTable = function(tab)
 		checkArg(1,tab,"table")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		local tstr = ser(tab)
 		if driveprops.tabcom == 1 then
-			if not lzsscom then error('LZSS compression: Lua 5.3 required',0) end
+			if not lzsscom then return nil, 'LZSS compression: Lua 5.3 required' end
 			tstr = string.pack('s2', lzsscom(tstr))
 		elseif driveprops.tabcom == 2 then
-			if not component.isAvailable('data') then error('deflate: Data card required',0) end
-			if not string.pack then error('string.pack: Lua 5.3 required',0) end
+			if not component.isAvailable('data') then return nil, 'deflate: Data card required' end
+			if not string.pack then return nil, 'string.pack: Lua 5.3 required' end
 			tstr = string.pack('s2', component.data.deflate(tstr))
 		end
 		if #tstr > 8192 then return nil, 'Not enough space for FAT' end
@@ -350,7 +397,7 @@ function tapfat.proxy(address)
 	proxyObj.format = function(fast)
 		fast = fast or false
 		checkArg(1,fast,"boolean")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		local siz = component.invoke(address, "getSize")
 		if not fast then
 			component.invoke(address, "seek", -math.huge)
@@ -365,11 +412,11 @@ function tapfat.proxy(address)
 	
 	proxyObj.isDirectory = function(path)
 		checkArg(1,path,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		path = canonical(path)
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		if path == '' then return true end
 		local seg = segments(path)
-		local fat = proxyObj.getTable()
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local list = oprval(seg, fat[1])
 		if type(list) ~= 'table' then return false end
 		if list[1] == -1 then return true else return false end
@@ -377,9 +424,9 @@ function tapfat.proxy(address)
 	
 	proxyObj.lastModified = function(path)
 		checkArg(1,path,"string")
-		path = canonical(path)
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		local fat = proxyObj.getTable()
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local seg = segments(path)
 		local fil = oprval(seg, fat[1])
 		if not fil then return 0 end
@@ -388,9 +435,9 @@ function tapfat.proxy(address)
 	
 	proxyObj.list = function(path)
 		checkArg(1,path,"string")
-		path = canonical(path)
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		local fat = proxyObj.getTable()
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local seg = segments(path)
 		local rlist = oprval(seg, fat[1])
 		if rlist == false then return nil, 'no such file or directory: '..path end
@@ -410,7 +457,7 @@ function tapfat.proxy(address)
 	end
 	
 	proxyObj.spaceTotal = function()
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		return component.invoke(address, "getSize")-8193
 	end
 	
@@ -418,9 +465,10 @@ function tapfat.proxy(address)
 		mode = mode or 'r'
 		checkArg(1,path,"string")
 		checkArg(2,mode,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		local descrpt
-		local fat = proxyObj.getTable()
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local seg = segments(path)
 		if mode ~= "r" and mode ~= "rb" and mode ~= "w" and mode ~= "wb" and mode ~= "a" and mode ~= "ab" then
 			error("unsupported mode",2)
@@ -459,12 +507,12 @@ function tapfat.proxy(address)
 							end
 						end
 					elseif #fat[2] == 0 then return nil, "not enough space" end
-					if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+					if not setval(seg, fat[1], {0, gettim(driveprops), {}}) then return false end
 				elseif mode == "a" or mode == "ab" then
 					local fildat = oprval(seg, fat[1])
 					local sz
 					if not fildat then
-						if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+						if not setval(seg, fat[1], {0, gettim(driveprops), {}}) then return false end
 					else sz = fildat[1]+1 end
 					filedescript[descrpt] = {
 						seek = sz,
@@ -485,10 +533,11 @@ function tapfat.proxy(address)
 	
 	proxyObj.remove = function(path)
 		checkArg(1,path,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		path = canonical(path)
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		
 		if path == '' then return false end
-		local fat = proxyObj.getTable()
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local seg = segments(path)
 		local fil = oprval(seg, fat[1])
 		if fil == false then return false end
@@ -517,9 +566,9 @@ function tapfat.proxy(address)
 	proxyObj.rename = function(path, newpath)
 		checkArg(1,path,"string")
 		checkArg(1,newpath,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		path = canonical(path)
-		local fat = proxyObj.getTable()
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local seg = segments(path)
 		local seg2 = segments(newpath)
 		local fil = oprval(seg, fat[1])
@@ -536,11 +585,12 @@ function tapfat.proxy(address)
 		count = count or 1
 		checkArg(1,fd,"number")
 		checkArg(2,count,"number")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		if filedescript[fd] == nil or filedescript[fd].mode ~= "r" then
 			return nil, "bad file descriptor"
 		end
-		local fat = proxyObj.getTable()
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local fil = oprval(filedescript[fd].path, fat[1])
 		if not fil then filedescript[fd] = nil return nil, "bad file descriptor" end
 		if fil[1] == 0 or fil[1] < filedescript[fd].seek+1 then return nil end
@@ -567,7 +617,7 @@ function tapfat.proxy(address)
 	
 	proxyObj.close = function(fd)
 		checkArg(1,fd,"number")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		if filedescript[fd] == nil then
 			return nil, "bad file descriptor"
 		end
@@ -575,7 +625,7 @@ function tapfat.proxy(address)
 	end
 	
 	proxyObj.getLabel = function()
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return 'TapFAT Drive' end
 		return component.invoke(address, "getLabel")
 	end
 	
@@ -583,7 +633,7 @@ function tapfat.proxy(address)
 		checkArg(1,fd,"number")
 		checkArg(2,kind,"string")
 		checkArg(3,offset,"number")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		if filedescript[fd] == nil then
 			return nil, "bad file descriptor"
 		end
@@ -607,10 +657,10 @@ function tapfat.proxy(address)
 	
 	proxyObj.size = function(path)
 		checkArg(1,path,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		path = canonical(path)
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		if path == '' then return 0 end
-		local fat = proxyObj.getTable()
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local seg = segments(path)
 		local fil = oprval(seg, fat[1])
 		if not fil or fil[1] == -1 then return 0 end
@@ -618,21 +668,21 @@ function tapfat.proxy(address)
 	end
 	
 	proxyObj.isReadOnly = function()
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		return false
 	end
 	
 	proxyObj.setLabel = function(newlabel)
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		component.invoke(address, "setLabel", newlabel)
 		return newlabel
 	end
 	
 	proxyObj.makeDirectory = function(path)
 		checkArg(1,path,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		path = canonical(path)
-		local fat = proxyObj.getTable()
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local seg = segments(path)
 		mkrdir(seg, fat[1], 1) 
 		local res, err = proxyObj.setTable(fat)
@@ -641,28 +691,32 @@ function tapfat.proxy(address)
 	
 	proxyObj.exists = function(path)
 		checkArg(1,path,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		path = canonical(path)
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		
 		if path == '' then return true end
 		local seg = segments(path)
-		local fat = proxyObj.getTable()
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		local list = oprval(seg, fat[1])
 		if list then return true else return list end
 	end
 	
 	proxyObj.spaceUsed = function()
-		if not proxyObj.isReady() then error('Device is not ready',0) end
-		return allocd(proxyObj.getTable()[1])
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
+		return allocd(fat[1])
 	end
 	
 	proxyObj.write = function(fd,data)
 		checkArg(1,fd,"number")
 		checkArg(2,data,"string")
-		if not proxyObj.isReady() then error('Device is not ready',0) end
+		if not proxyObj.isReady() then return nil, 'Device is not ready' end
 		if filedescript[fd] == nil or filedescript[fd].mode == "r" then
 			return nil, "bad file descriptor"
 		end
-		local fat = proxyObj.getTable()
+		local fat, reas = proxyObj.getTable()
+		if not fat then return fat, reas end
 		if #fat[2] == 0 then return nil, "not enough space" end
 		local seg = filedescript[fd].path
 		local fil = oprval(seg, fat[1])
@@ -696,34 +750,4 @@ function tapfat.proxy(address)
 	return proxyObj
 end
 
-local drive = tapfat.proxy(component.list('tape_drive')())
-local oproxy = component.proxy
-function component.proxy(address)
-	checkArg(1,address,"string")
-	if drive.address == address then
-		return drive
-	end
-	return oproxy(address)
-end
-
-local olist = component.list
-function component.list(filter, exact)
-	local dlist = olist(filter, exact)
-	if filter == nil or (exact and filter == 'filesystem') or (not exact and ('filesystem'):find(filter, nil, true)) then
-		dlist[drive.address] = 'filesystem'
-	end
-	return dlist
-end
-
-local oinvoke = component.invoke
-function component.invoke(address, method, ...)
-	checkArg(1,address,"string")
-	checkArg(2,method,"string")
-	if drive.address == address then
-		if drive[method] == nil then
-			error("no such method",2)
-		end
-		return drive[method](...)
-	end
-	return oinvoke(address, method, ...)
-end
+return tapfat
