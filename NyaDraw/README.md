@@ -7,7 +7,7 @@ Port by [Bs0Dd](https://github.com/Bs0Dd)
 
 ## Download
 
-* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standart version of library (30Kb)
+* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standard version of library (30Kb)
 
 
 * `pastebin get PqqutTfX /usr/lib/NyaDrMini.lua` to load a minified (but full-functional) version of library (12Kb)
@@ -309,7 +309,7 @@ engine.**flush**( [width, height] )
 
 Set screen buffer resolution to the specified one and fill it with black pixels and whitespace stringacter. Unlike buffer.**setResolution**() it does not change the current resolution of the GPU. If optional arguments are **not specified**, then the buffer size becomes equivalent to the current GPU resolution.
 
-engine.**getIndex*( x, y ): **int** index
+engine.**getIndex**( x, y ): **int** index
 -----------------------------------------------------------
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
