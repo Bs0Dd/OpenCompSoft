@@ -166,7 +166,7 @@ local function remdir(fil, fat, seg)
 				if not sfil then return sfil end
 				if not remdir(sfil, fat, cseg) then return false end
 			else
-				for _, block in pairs(fil[3]) do
+				for _, block in pairs(file[3]) do
 					table.insert(fat[2], block)
 				end				
 			end
