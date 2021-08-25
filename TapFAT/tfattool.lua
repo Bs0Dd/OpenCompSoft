@@ -1,4 +1,4 @@
---[[Compys(TM) TapFAT Tape Configuration Tool v1.50
+--[[Compys(TM) TapFAT Tape Configuration Tool v1.52
 	2021 (C) Compys S&N Systems
 	This is a tool for do some manipulations with TapFAT tapes
 	Please, load "tfatinit" driver firstly
@@ -222,7 +222,7 @@ local function drawBack()
 	local posx = math.ceil((cx+42)/2)
 	local y = math.ceil(cy/10)
 	gpu.set(x, y  , ' ╔══════════════════════════════════════╗ ')
-	gpu.set(x, y+1, ' ║ TapFAT Tape Configuration Tool v1.50 ║ ')
+	gpu.set(x, y+1, ' ║ TapFAT Tape Configuration Tool v1.52 ║ ')
 	gpu.set(x, y+2, ' ║      2021  © Compys S&N Systems      ║ ')
 	gpu.set(x, y+3, ' ╚══════════════════════════════════════╝ ')
 	if gpu.maxDepth() > 1 then
