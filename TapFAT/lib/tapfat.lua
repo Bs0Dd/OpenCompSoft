@@ -1,4 +1,4 @@
---[[Compys(TM) TapFAT Shared Library v1.50
+--[[Compys(TM) TapFAT Shared Library v1.52
 	2021 (C) Compys S&N Systems
 	This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
 	With this system you can use Computronics Tapes as a file storage like Floppy
@@ -65,7 +65,7 @@ local function allocd(filtab, space)
 	return space
 end
 
-local function mkrdir(ptab, filtab, num)
+local function mkrdir(ptab, filtab, driveprops, num)
 	if num > #ptab then return true end
 	local checks = {}
 	local i = 0
@@ -77,7 +77,7 @@ local function mkrdir(ptab, filtab, num)
 	if dir == false then
 		setval(checks, filtab, {-1, gettim(driveprops)})
 	end
-	return mkrdir(ptab, filtab, num+1)
+	return mkrdir(ptab, filtab, driveprops, num+1)
 end
 
 local function remdir(fil, fat, seg)
@@ -605,7 +605,7 @@ function tapfat.proxy(address)
 		path = fs.canonical(path)
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
-		mkrdir(seg, fat[1], 1) 
+		mkrdir(seg, fat[1], driveprops, 1) 
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
 	end
