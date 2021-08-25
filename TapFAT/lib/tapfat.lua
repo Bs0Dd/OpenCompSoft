@@ -605,7 +605,7 @@ function tapfat.proxy(address)
 		path = fs.canonical(path)
 		local fat = proxyObj.getTable()
 		local seg = fs.segments(path)
-		mkrdir(seg, fat[1], driveprops, 1) 
+		mkrdir(seg, fat[1], driveprops, 1)
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
 	end
