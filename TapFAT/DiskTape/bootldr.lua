@@ -2,7 +2,6 @@ local computer = computer
 local component = component
 local unicode = unicode
 local filedescript = {}
-local driveprops = {tabcom = false, stordate = true}
 local ramdisk
 
 for k in component.list('filesystem') do
@@ -119,7 +118,7 @@ local function canonical(path)
   end
 end
 
-local function gettim()
+local function gettim(driveprops)
 	if not driveprops.stordate then return 0 end
 	local name = 'lt'
 	local f = ramdisk.open(name, "w")
@@ -162,7 +161,7 @@ local function allocd(filtab, space)
 	return space
 end
 
-local function mkrdir(ptab, filtab, num)
+local function mkrdir(ptab, filtab, driveprops, num)
 	if num > #ptab then return true end
 	local checks = {}
 	local i = 0
@@ -172,9 +171,9 @@ local function mkrdir(ptab, filtab, num)
 	end
 	dir = oprval(checks, filtab)
 	if dir == false then
-		setval(checks, filtab, {-1, gettim()})
+		setval(checks, filtab, {-1, gettim(driveprops)})
 	end
-	return mkrdir(ptab, filtab, num+1)
+	return mkrdir(ptab, filtab, driveprops, num+1)
 end
 
 local function remdir(fil, fat, seg)
@@ -187,7 +186,7 @@ local function remdir(fil, fat, seg)
 				if not sfil then return sfil end
 				if not remdir(sfil, fat, cseg) then return false end
 			else
-				for _, block in pairs(fil[3]) do
+				for _, block in pairs(file[3]) do
 					table.insert(fat[2], block)
 				end				
 			end
@@ -283,7 +282,7 @@ function tapfat.proxy(address)
 	if not found then
 		error("No such component",2)
 	end
-	local label
+	local driveprops = {tabcom = false, stordate = true}
 	component.invoke(address, "seek", -math.huge)
 	local proxyObj = {}
 	proxyObj.type = "filesystem"
@@ -459,12 +458,12 @@ function tapfat.proxy(address)
 							end
 						end
 					elseif #fat[2] == 0 then return nil, "not enough space" end
-					if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+					if not setval(seg, fat[1], {0, gettim(driveprops), {}}) then return false end
 				elseif mode == "a" or mode == "ab" then
 					local fildat = oprval(seg, fat[1])
 					local sz
 					if not fildat then
-						if not setval(seg, fat[1], {0, gettim(), {}}) then return false end
+						if not setval(seg, fat[1], {0, gettim(driveprops), {}}) then return false end
 					else sz = fildat[1]+1 end
 					filedescript[descrpt] = {
 						seek = sz,
@@ -634,7 +633,7 @@ function tapfat.proxy(address)
 		path = canonical(path)
 		local fat = proxyObj.getTable()
 		local seg = segments(path)
-		mkrdir(seg, fat[1], 1) 
+		mkrdir(seg, fat[1], driveprops, 1)
 		local res, err = proxyObj.setTable(fat)
 		if not res then return res, err else return true end
 	end
