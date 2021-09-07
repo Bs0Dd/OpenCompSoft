@@ -1,4 +1,4 @@
---[[NyaDraw Graphic Engine v1.06 for OpenOS
+--[[NyaDraw Graphic Engine v1.07 for OpenOS
 	Standalone "Screen.lua" port from MineOS
 	More info on: https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md
 	2015-2021 - ECS: https://github.com/IgorTimofeev
@@ -16,9 +16,9 @@ local currentFrameBackgrounds, currentFrameForegrounds, currentFrameSymbols, new
 local drawLimitX1, drawLimitX2, drawLimitY1, drawLimitY2
 local GPUProxy, GPUProxyGetResolution, GPUProxySetResolution, GPUProxyGetBackground, GPUProxyGetForeground, GPUProxySetBackground, GPUProxySetForeground, GPUProxyGet, GPUProxySet, GPUProxyFill
 
-local mathCeil, mathFloor, mathModf, mathAbs = math.ceil, math.floor, math.modf, math.abs
+local mathCeil, mathFloor, mathModf, mathAbs, mathMin, mathMax = math.ceil, math.floor, math.modf, math.abs, math.min, math.max
 local tableInsert, tableConcat = table.insert, table.concat
-local colorBlend
+local colorIntegerToRGB, colorRGBToInteger, colorBlend
 local unicodeLen, unicodeSub = unicode.len, unicode.sub
 
 --------------------------------------------------------------------------------
@@ -77,7 +77,13 @@ local function to24Bit(color8Bit)
 end
 
 if computer.getArchitecture and computer.getArchitecture() == "Lua 5.3" then
-	colorBlend = load([[return function(color1, color2, transparency)
+	colorIntegerToRGB, colorRGBToInteger, colorBlend = load([[return function(integerColor)
+		return integerColor >> 16, integerColor >> 8 & 0xFF, integerColor & 0xFF
+	end,
+	function(r, g, b)
+		return r << 16 | g << 8 | b
+	end,
+	function(color1, color2, transparency)
 		local invertedTransparency = 1 - transparency
 		return
 			((color2 >> 16) * invertedTransparency + (color1 >> 16) * transparency) // 1 << 16 |
@@ -85,6 +91,16 @@ if computer.getArchitecture and computer.getArchitecture() == "Lua 5.3" then
 			((color2 & 0xFF) * invertedTransparency + (color1 & 0xFF) * transparency) // 1
 	end]])()
 else
+	colorIntegerToRGB = function(integerColor)
+		local r = integerColor / 65536
+		r = r - r % 1
+		local g = (integerColor - r * 65536) / 256
+		g = g - g % 1
+		return r, g, integerColor - r * 65536 - g * 256
+	end
+	colorRGBToInteger = function(r, g, b)
+		return r * 65536 + g * 256 + b
+	end
 	colorBlend = function(color1, color2, transparency)
 		local invertedTransparency = 1 - transparency
 		local r1, r2 = color1 / 65536, color2 / 65536
@@ -141,25 +157,25 @@ local function iset(picture, x, y, background, foreground, alpha, symbol)
 	return picture
 end
 
-local function multiLoad(file, picture, mode) --MultiLoader for OCIF6 and OCIF7. Set mode = 0 to OCIF6, mode = 1 to OCIF7.
-	picture[1] = string.byte(file:read(1))
-	picture[2] = string.byte(file:read(1))
+local function multiLoad(file, picture, ocif7, ocif8) --MultiLoader for OCIF6-8.
+	picture[1] = string.byte(file:read(1)) + ocif8
+	picture[2] = string.byte(file:read(1)) + ocif8
 	local currentAlpha, currentSymbol, currentBackground, currentForeground, currentY
-	for alpha = 1, string.byte(file:read(1)) + mode do
+	for alpha = 1, string.byte(file:read(1)) + ocif7 do
 		currentAlpha = string.byte(file:read(1)) / 255
-		for symbol = 1, readBytes(file, 2) + mode do
+		for symbol = 1, readBytes(file, 2) + ocif7 do
 			currentSymbol = readUnicodeChar(file)
-			for background = 1, string.byte(file:read(1)) + mode do
+			for background = 1, string.byte(file:read(1)) + ocif7 do
 				currentBackground = to24Bit(string.byte(file:read(1)))
-				for foreground = 1, string.byte(file:read(1)) + mode do
+				for foreground = 1, string.byte(file:read(1)) + ocif7 do
 					currentForeground = to24Bit(string.byte(file:read(1)))
-					for y = 1, string.byte(file:read(1)) + mode do
+					for y = 1, string.byte(file:read(1)) + ocif7 do
 						currentY = string.byte(file:read(1))
-						for x = 1, string.byte(file:read(1)) + mode do
+						for x = 1, string.byte(file:read(1)) + ocif7 do
 							iset(
 								picture,
-								string.byte(file:read(1)),
-								currentY,
+								string.byte(file:read(1)) + ocif8,
+								currentY + ocif8,
 								currentBackground,
 								currentForeground,
 								currentAlpha,
@@ -187,11 +203,15 @@ Loader[5] = function(file, picture)
 end
 
 Loader[6] = function(file, picture)
-	multiLoad(file, picture, 0)
+	multiLoad(file, picture, 0, 0)
 end
 
 Loader[7] = function(file, picture)
-	multiLoad(file, picture, 1)
+	multiLoad(file, picture, 1, 0)
+end
+
+Loader[8] = function(file, picture)
+	multiLoad(file, picture, 1, 1)
 end
 
 local function loadImage(path)
@@ -312,7 +332,7 @@ local function getScaledResolution(scale)
 	local maxWidth, maxHeight = GPUProxy.maxResolution()
 	local proportion = 2 * (16 * aspectWidth - 4.5) / (16 * aspectHeight - 4.5)
 	 
-	local height = scale * math.min(
+	local height = scale * mathMin(
 		maxWidth / proportion,
 		maxWidth,
 		math.sqrt(maxWidth * maxHeight / proportion)
@@ -347,28 +367,149 @@ local function set(x, y, background, foreground, symbol)
 	end
 end
 
-local function drawRectangle(x, y, width, height, background, foreground, symbol, transparency) 
-	local index, indexStepOnReachOfSquareWidth = bufferWidth * (y - 1) + x, bufferWidth - width
-	for j = y, y + height - 1 do
-		if j >= drawLimitY1 and j <= drawLimitY2 then
-			for i = x, x + width - 1 do
-				if i >= drawLimitX1 and i <= drawLimitX2 then
-					if transparency then
-						newFrameBackgrounds[index], newFrameForegrounds[index] =
-							colorBlend(newFrameBackgrounds[index], background, transparency),
-							colorBlend(newFrameForegrounds[index], background, transparency)
-					else
-						newFrameBackgrounds[index], newFrameForegrounds[index], newFrameSymbols[index] = background, foreground, symbol
-					end
-				end
+local function drawRectangle(x, y, width, height, background, foreground, symbol, transparency)
+	local temp
 
-				index = index + 1
+	-- Clipping left
+	if x < drawLimitX1 then
+		width = width - drawLimitX1 + x
+		x = drawLimitX1
+	end
+
+	-- Right
+	temp = x + width - 1
+	if temp > drawLimitX2 then
+		width = width - temp + drawLimitX2
+	end
+
+	-- Top
+	if y < drawLimitY1 then
+		height = height - drawLimitY1 + y
+		y = drawLimitY1
+	end
+
+	-- Bottom
+	temp = y + height - 1
+	if temp > drawLimitY2 then
+		height = height - temp + drawLimitY2
+	end
+
+	temp = bufferWidth * (y - 1) + x
+	local indexStepOnEveryLine = bufferWidth - width
+
+	if transparency then
+		for j = 1, height do
+			for i = 1, width do
+				newFrameBackgrounds[temp],
+				newFrameForegrounds[temp] =
+					colorBlend(newFrameBackgrounds[temp], background, transparency),
+					colorBlend(newFrameForegrounds[temp], background, transparency)
+
+				temp = temp + 1
 			end
 
-			index = index + indexStepOnReachOfSquareWidth
-		else
-			index = index + bufferWidth
+			temp = temp + indexStepOnEveryLine
 		end
+	else
+		for j = 1, height do
+			for i = 1, width do
+				newFrameBackgrounds[temp],
+				newFrameForegrounds[temp],
+				newFrameSymbols[temp] = background, foreground, symbol
+
+				temp = temp + 1
+			end
+
+			temp = temp + indexStepOnEveryLine
+		end
+	end
+end
+
+local function blur(x, y, width, height, radius, color, transparency)
+	local temp
+
+	-- Clipping left
+	if x < drawLimitX1 then
+		width = width - drawLimitX1 + x
+		x = drawLimitX1
+	end
+
+	-- Right
+	temp = x + width - 1
+	if temp > drawLimitX2 then
+		width = width - temp + drawLimitX2
+	end
+
+	-- Top
+	if y < drawLimitY1 then
+		height = height - drawLimitY1 + y
+		y = drawLimitY1
+	end
+
+	-- Bottom
+	temp = y + height - 1
+	if temp > drawLimitY2 then
+		height = height - temp + drawLimitY2
+	end
+
+	local screenIndex, indexStepOnEveryLine, buffer, bufferIndex, rSum, gSum, bSum, rSumFg, gSumFg, bSumFg, r, g, b =
+		bufferWidth * (y - 1) + x,
+		bufferWidth - width,
+		{},
+		1
+
+	-- Copying
+	temp = screenIndex
+
+	if color then
+		for j = 1, height do
+			for i = 1, width do
+				buffer[bufferIndex] = colorBlend(newFrameBackgrounds[temp], color, transparency)
+
+				temp, bufferIndex = temp + 1, bufferIndex + 1
+			end
+			
+			temp = temp + indexStepOnEveryLine
+		end
+else
+		for j = 1, height do
+			for i = 1, width do
+				buffer[bufferIndex] = newFrameBackgrounds[temp]
+
+				temp, bufferIndex = temp + 1, bufferIndex + 1
+			end
+
+			temp = temp + indexStepOnEveryLine
+		end
+	end
+
+	-- Blurring
+	local rSum, gSum, bSum, count, r, g, b
+
+	for j = 1, height do
+		for i = 1, width do
+			rSum, gSum, bSum, count = 0, 0, 0, 0
+
+			for jr = mathMax(1, j - radius), mathMin(j + radius, height) do
+				for ir = mathMax(1, i - radius), mathMin(i + radius, width) do
+					r, g, b = colorIntegerToRGB(buffer[width * (jr - 1) + ir])
+					rSum, gSum, bSum, count = rSum + r, gSum + g, bSum + b, count + 1
+				end
+			end
+
+			-- Calculatin average channels value
+			r, g, b = rSum / count, gSum / count, bSum / count
+			-- Faster than math.floor
+			r, g, b = r - r % 1, g - g % 1, b - b % 1
+
+			newFrameBackgrounds[screenIndex] = colorRGBToInteger(r, g, b)
+			newFrameForegrounds[screenIndex] = 0x0
+			newFrameSymbols[screenIndex] = " "
+
+			screenIndex = screenIndex + 1
+		end
+
+		screenIndex = screenIndex + indexStepOnEveryLine
 	end
 end
 
@@ -399,23 +540,23 @@ end
 
 local function paste(startX, startY, picture)
 	local imageWidth = picture[1]
-	local bufferIndex, pictureIndex, bufferIndexStepOnReachOfImageWidth = bufferWidth * (startY - 1) + startX, 3, bufferWidth - imageWidth
+	local screenIndex, pictureIndex, screenIndexStepOnReachOfImageWidth = bufferWidth * (startY - 1) + startX, 3, bufferWidth - imageWidth
 
 	for y = startY, startY + picture[2] - 1 do
 		if y >= drawLimitY1 and y <= drawLimitY2 then
 			for x = startX, startX + imageWidth - 1 do
 				if x >= drawLimitX1 and x <= drawLimitX2 then
-					newFrameBackgrounds[bufferIndex] = picture[pictureIndex]
-					newFrameForegrounds[bufferIndex] = picture[pictureIndex + 1]
-					newFrameSymbols[bufferIndex] = picture[pictureIndex + 2]
+					newFrameBackgrounds[screenIndex] = picture[pictureIndex]
+					newFrameForegrounds[screenIndex] = picture[pictureIndex + 1]
+					newFrameSymbols[screenIndex] = picture[pictureIndex + 2]
 				end
 
-				bufferIndex, pictureIndex = bufferIndex + 1, pictureIndex + 3
+				screenIndex, pictureIndex = screenIndex + 1, pictureIndex + 3
 			end
 
-			bufferIndex = bufferIndex + bufferIndexStepOnReachOfImageWidth
+			screenIndex = screenIndex + screenIndexStepOnReachOfImageWidth
 		else
-			bufferIndex, pictureIndex = bufferIndex + bufferWidth, pictureIndex + imageWidth * 3
+			screenIndex, pictureIndex = screenIndex + bufferWidth, pictureIndex + imageWidth * 3
 		end
 	end
 end
@@ -485,6 +626,38 @@ local function rasterizeEllipse(centerX, centerY, radiusX, radiusY, method)
 	end
 end
 
+local function rasterizePolygon(centerX, centerY, startX, startY, countOfEdges, method)
+	local degreeStep = 360 / countOfEdges
+
+	local deltaX, deltaY = startX - centerX, startY - centerY
+	local radius = math.sqrt(deltaX ^ 2 + deltaY ^ 2)
+	local halfRadius = radius / 2
+	local startDegree = math.deg(math.asin(deltaX / radius))
+
+	local function round(num) 
+		if num >= 0 then
+			return math.floor(num + 0.5) 
+		else
+			return math.ceil(num - 0.5)
+		end
+	end
+
+	local function calculatePosition(degree)
+		local radDegree = math.rad(degree)
+		local deltaX2 = math.sin(radDegree) * radius
+		local deltaY2 = math.cos(radDegree) * radius
+		return round(centerX + deltaX2), round(centerY + (deltaY >= 0 and deltaY2 or -deltaY2))
+	end
+
+	local xOld, yOld, xNew, yNew = calculatePosition(startDegree)
+
+	for degree = (startDegree + degreeStep - 1), (startDegree + 360), degreeStep do
+		xNew, yNew = calculatePosition(degree)
+		rasterizeLine(xOld, yOld, xNew, yNew, method)
+		xOld, yOld = xNew, yNew
+	end
+end
+
 local function drawLine(x1, y1, x2, y2, background, foreground, symbol)
 	rasterizeLine(x1, y1, x2, y2, function(x, y)
 		set(x, y, background, foreground, symbol)
@@ -497,63 +670,96 @@ local function drawEllipse(centerX, centerY, radiusX, radiusY, background, foreg
 	end)
 end
 
+local function drawPolygon(centerX, centerY, radiusX, radiusY, background, foreground, countOfEdges, symbol)
+	rasterizePolygon(centerX, centerY, radiusX, radiusY, countOfEdges, function(x, y)
+		set(x, y, background, foreground, symbol)
+	end)
+end
+
 local function drawText(x, y, textColor, data, transparency)
 	if y >= drawLimitY1 and y <= drawLimitY2 then
-		local charIndex, bufferIndex = 1, bufferWidth * (y - 1) + x
+		local charIndex, screenIndex = 1, bufferWidth * (y - 1) + x
 		
 		for charIndex = 1, unicodeLen(data) do
 			if x >= drawLimitX1 and x <= drawLimitX2 then
 				if transparency then
-					newFrameForegrounds[bufferIndex] = colorBlend(newFrameBackgrounds[bufferIndex], textColor, transparency)
+					newFrameForegrounds[screenIndex] = colorBlend(newFrameBackgrounds[screenIndex], textColor, transparency)
 				else
-					newFrameForegrounds[bufferIndex] = textColor
+					newFrameForegrounds[screenIndex] = textColor
 				end
 
-				newFrameSymbols[bufferIndex] = unicodeSub(data, charIndex, charIndex)
+				newFrameSymbols[screenIndex] = unicodeSub(data, charIndex, charIndex)
 			end
 
-			x, bufferIndex = x + 1, bufferIndex + 1
+			x, screenIndex = x + 1, screenIndex + 1
 		end
 	end
 end
 
-local function drawImage(startX, startY, picture, blendForeground)
-	local bufferIndex, pictureIndex, imageWidth, background, foreground, alpha, symbol = bufferWidth * (startY - 1) + startX, 3, picture[1]
-	local bufferIndexStepOnReachOfImageWidth = bufferWidth - imageWidth
+local function drawImage(x, y, picture, blendForeground)
+	local imageWidth, imageHeight, pictureIndex, temp = picture[1], picture[2], 3
+	local clippedImageWidth, clippedImageHeight = imageWidth, imageHeight
 
-	for y = startY, startY + picture[2] - 1 do
-		if y >= drawLimitY1 and y <= drawLimitY2 then
-			for x = startX, startX + imageWidth - 1 do
-				if x >= drawLimitX1 and x <= drawLimitX2 then
-					alpha, symbol = picture[pictureIndex + 2], picture[pictureIndex + 3]
-					
-					-- If it's fully transparent pixel
-					if alpha == 0 then
-						newFrameBackgrounds[bufferIndex], newFrameForegrounds[bufferIndex] = picture[pictureIndex], picture[pictureIndex + 1]
-					-- If it has some transparency
-					elseif alpha > 0 and alpha < 1 then
-						newFrameBackgrounds[bufferIndex] = colorBlend(newFrameBackgrounds[bufferIndex], picture[pictureIndex], alpha)
-						
-						if blendForeground then
-							newFrameForegrounds[bufferIndex] = colorBlend(newFrameForegrounds[bufferIndex], picture[pictureIndex + 1], alpha)
-						else
-							newFrameForegrounds[bufferIndex] = picture[pictureIndex + 1]
-						end
-					-- If it's not transparent with whitespace
-					elseif symbol ~= " " then
-						newFrameForegrounds[bufferIndex] = picture[pictureIndex + 1]
-					end
+	-- Clipping left
+	if x < drawLimitX1 then
+		temp = drawLimitX1 - x
+		clippedImageWidth, x, pictureIndex = clippedImageWidth - temp, drawLimitX1, pictureIndex + temp * 4
+	end
 
-					newFrameSymbols[bufferIndex] = symbol
+	-- Right
+	temp = x + clippedImageWidth - 1
+	if temp > drawLimitX2 then
+		clippedImageWidth = clippedImageWidth - temp + drawLimitX2
+	end
+
+	-- Top
+	if y < drawLimitY1 then
+		temp = drawLimitY1 - y
+		clippedImageHeight, y, pictureIndex = clippedImageHeight - temp, drawLimitY1, pictureIndex + temp * imageWidth * 4
+	end
+
+	-- Bottom
+	temp = y + clippedImageHeight - 1
+	if temp > drawLimitY2 then
+		clippedImageHeight = clippedImageHeight - temp + drawLimitY2
+	end
+
+	local
+		screenIndex,
+		screenIndexStep,
+		pictureIndexStep,
+		background,
+		foreground,
+		alpha,
+		symbol = bufferWidth * (y - 1) + x, bufferWidth - clippedImageWidth, (imageWidth - clippedImageWidth) * 4
+
+	for j = 1, clippedImageHeight do
+		for i = 1, clippedImageWidth do
+			alpha, symbol = picture[pictureIndex + 2], picture[pictureIndex + 3]
+
+			-- If it's fully transparent pixel
+			if alpha == 0 then
+				newFrameBackgrounds[screenIndex], newFrameForegrounds[screenIndex] = picture[pictureIndex], picture[pictureIndex + 1]
+			-- If it has some transparency
+			elseif alpha > 0 and alpha < 1 then
+				newFrameBackgrounds[screenIndex] = colorBlend(newFrameBackgrounds[screenIndex], picture[pictureIndex], alpha)
+
+				if blendForeground then
+					newFrameForegrounds[screenIndex] = colorBlend(newFrameForegrounds[screenIndex], picture[pictureIndex + 1], alpha)
+				else
+					newFrameForegrounds[screenIndex] = picture[pictureIndex + 1]
 				end
-
-				bufferIndex, pictureIndex = bufferIndex + 1, pictureIndex + 4
+			-- If it's not transparent with whitespace
+			elseif symbol ~= " " then
+				newFrameForegrounds[screenIndex] = picture[pictureIndex + 1]
 			end
 
-			bufferIndex = bufferIndex + bufferIndexStepOnReachOfImageWidth
-		else
-			bufferIndex, pictureIndex = bufferIndex + bufferWidth, pictureIndex + imageWidth * 4
+			newFrameSymbols[screenIndex] = symbol
+
+			screenIndex, pictureIndex = screenIndex + 1, pictureIndex + 4
 		end
+	
+		screenIndex, pictureIndex = screenIndex + screenIndexStep, pictureIndex + pictureIndexStep
 	end
 end
 
@@ -742,12 +948,12 @@ local function update(force)
 				end
 
 				-- Group pixels that need to be drawn by background and foreground
-				changes[currentFrameBackground] = changes[currentFrameBackground] or {}
-				changesCurrentFrameBackground = changes[currentFrameBackground]
-				changesCurrentFrameBackground[currentFrameForeground] = changesCurrentFrameBackground[currentFrameForeground] or {index = 1}
-				changesCurrentFrameBackgroundCurrentFrameForeground = changesCurrentFrameBackground[currentFrameForeground]
-				changesCurrentFrameBackgroundCurrentFrameForegroundIndex = changesCurrentFrameBackgroundCurrentFrameForeground.index
+				changesCurrentFrameBackground = changes[currentFrameBackground] or {}
+				changes[currentFrameBackground] = changesCurrentFrameBackground
+				changesCurrentFrameBackgroundCurrentFrameForeground = changesCurrentFrameBackground[currentFrameForeground] or {index = 1}
+				changesCurrentFrameBackground[currentFrameForeground] = changesCurrentFrameBackgroundCurrentFrameForeground
 				
+				changesCurrentFrameBackgroundCurrentFrameForegroundIndex = changesCurrentFrameBackgroundCurrentFrameForeground.index
 				changesCurrentFrameBackgroundCurrentFrameForeground[changesCurrentFrameBackgroundCurrentFrameForegroundIndex], changesCurrentFrameBackgroundCurrentFrameForegroundIndex = x, changesCurrentFrameBackgroundCurrentFrameForegroundIndex + 1
 				changesCurrentFrameBackgroundCurrentFrameForeground[changesCurrentFrameBackgroundCurrentFrameForegroundIndex], changesCurrentFrameBackgroundCurrentFrameForegroundIndex = y, changesCurrentFrameBackgroundCurrentFrameForegroundIndex + 1
 				changesCurrentFrameBackgroundCurrentFrameForeground[changesCurrentFrameBackgroundCurrentFrameForegroundIndex], changesCurrentFrameBackgroundCurrentFrameForegroundIndex = tableConcat(equalChars), changesCurrentFrameBackgroundCurrentFrameForegroundIndex + 1
@@ -810,6 +1016,7 @@ return {
 	paste = paste,
 	rasterizeLine = rasterizeLine,
 	rasterizeEllipse = rasterizeEllipse,
+	rasterizePolygon = rasterizePolygon,
 	semiPixelRawSet = semiPixelRawSet,
 	semiPixelSet = semiPixelSet,
 	update = update,
@@ -817,9 +1024,11 @@ return {
 	drawRectangle = drawRectangle,
 	drawLine = drawLine,
 	drawEllipse = drawEllipse,
+	drawPolygon = drawPolygon,
 	drawText = drawText,
 	drawImage = drawImage,
 	drawFrame = drawFrame,
+	blur = blur,
 
 	drawSemiPixelRectangle = drawSemiPixelRectangle,
 	drawSemiPixelLine = drawSemiPixelLine,

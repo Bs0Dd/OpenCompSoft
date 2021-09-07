@@ -7,10 +7,10 @@ Port by [Bs0Dd](https://github.com/Bs0Dd)
 
 ## Download
 
-* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standard version of library (30Kb)
+* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standard version of library (34Kb)
 
 
-* `pastebin get PqqutTfX /usr/lib/NyaDrMini.lua` to load a minified (but full-functional) version of library (12Kb)
+* `pastebin get PqqutTfX /usr/lib/NyaDrMini.lua` to load a minified (but full-functional) version of library (14Kb)
 
 ## API (based on ECS's docs)
 
@@ -93,7 +93,7 @@ engine.**loadImage**( path ): *table* picture
 | ------ | ------ | ------ |
 | *string* | path | Path to the picture to be loaded |
 
-Loads a OCIF picture at the specified path and returns it as a table for, for example, drawing through engine.**drawImage**(...). Supports OCIF5, OCIF6 and OCIF7 formats.
+Loads a OCIF picture at the specified path and returns it as a table for, for example, drawing through engine.**drawImage**(...). Supports OCIF5-8 formats.
 
 ### Rendering methods
 
