@@ -2,13 +2,16 @@
 Some Lua software for OpenComputers
 
 **Programs**
-* `Openfetch` - Neofetch-like utility for OpenComputers  
+* `Openfetch` - Neofetch-like utility for OpenComputers
 
    Get : `pastebin get HY0muRMP openfetch.lua`
 * `OpenWebNet` - In-world network protocol for web pages and content sharing  
    Developing freezed
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/OpenWebNet/README.md)
+* `Piano` - Simple piano app, based on piano from early MineOS versions.
+
+   Download from MineOS App Market 
 * `NyaDraw` - Fast and functional graphic engine. Port "Screen.lua" from MineOS
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md)
