@@ -1,0 +1,6 @@
+{
+{false, false, false, false},
+{true, false, true, false},
+{true, false, true, false},
+{true, false, true, false}
+}
