@@ -1,0 +1,49 @@
+{
+	newGame = "New game",
+	records = "Records",
+	howToPlay = "How to play",
+	back = "Back",
+	exit = "Exit",
+	next = "Next",
+	player = "Player: ",
+	record = "Record: ",
+	scores = "Scores: ",
+	selDiff = "Select difficulty:",
+	easy = "Easy",
+	easyDesc = "Ten lives at the beginning, 2 points for a letter, 2 lives for a word.",
+	medium = "Medium",
+	mediumDesc = "Five lives at the beginning, for the letter 10 points, for the word life.",
+	hard = "Hard",
+	hardDesc = "Two lives at the beginning, for the letter 50 points, for the word life.",
+	hardcore = "Hardcore",
+	hardcoreDesc = "Only 10 lives per game and 100 points per letter.",
+	solved = "The word is guessed!",
+	gameOver = "The game is over. You lose!",
+	
+	
+	howToText = {
+		"How to play",
+		"",
+		"Good day, dear player! The \"GuessWord\" rules are",
+		"very simple, you will see n-number of cells behind",
+		"which letters are hidden. Above the cells there is",
+		"a hint by which you need to guess the word. To select",
+		"a letter, you can press it on the real or on-screen",
+		"keyboard. If the letter is in the word, the key will",
+		"turn green and the cells with the letter will open.",
+		"Otherwise the key will turn red and you will lose",
+		"one life. There are 4 levels of difficulty. The number",
+		"of lives and points given out depends on them. Also,",
+		"if you guess several letters in a row, then the points",
+		"given out for each letter are increased by the number",
+		"of letters guessed in a row.",
+		"",
+		"Good luck with the game!!!"
+	},
+	
+	keyboard = {
+		{'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'},
+		{'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'},
+		{'Z', 'X', 'C', 'V', 'B', 'N', 'M'}
+	}
+}
