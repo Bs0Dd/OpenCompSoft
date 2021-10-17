@@ -15,6 +15,11 @@ Some Lua software for OpenComputers
 * `TETЯIS` - Game console with Tetris and Snake games, based on `Snake` game from early MineOS versions.
 
    Download from MineOS App Market
+* `GuessWord` - Game where you have to guess a word by a hint.  
+   **WARNING** - The database of words for the English language is not yet ready (there is only Russian).  
+   If you want to help me with this, write to Discord: `Bs()Dd#5299`.
+
+   Download from MineOS App Market
 * `NyaDraw` - Fast and functional graphic engine. Port "Screen.lua" from MineOS
 
    See [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md)
