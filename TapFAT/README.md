@@ -111,6 +111,9 @@ Read [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/TapFAT/DiskTa
 
 ## Changelog
 
+* Version 1.54
+	* Fixed bug when lastModified("") returned a *nil*.
+	* Fixed bug with clear tapes.
 * Version 1.52
 	* Fixed critical bug in makeDirectory function.
 	* Fixed critical bug in remove function (when removing directories).

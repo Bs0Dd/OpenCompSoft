@@ -1,4 +1,4 @@
---[[Compys(TM) TapFAT Driver v1.52
+--[[Compys(TM) TapFAT Driver v1.54
 	2021 (C) Compys S&N Systems
 	This is a driver for a "Tape File Allocation Table" (or "TapFAT") system 
 	It mounts Computronics Streamers as a filesystem, to use with TapFAT tapes
@@ -14,7 +14,7 @@ local args, options = shell.parse(...)
 
 print('╔══════════════════════════════╗')
 print('╟───────────[TapFAT]───────────╢')
-print('║     TapFAT Driver v1.52      ║')
+print('║     TapFAT Driver v1.54      ║')
 print('║        Filesystem for        ║')
 print('║      Computronics tapes      ║')
 print('║ 2021  (c) Compys S&N Systems ║')

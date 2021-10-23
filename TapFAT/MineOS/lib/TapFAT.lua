@@ -1,4 +1,4 @@
---[[Compys(TM) TapFAT Shared Library v1.52 for MineOS
+--[[Compys(TM) TapFAT Shared Library v1.54 for MineOS
 	2021 (C) Compys S&N Systems
 	This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
 	With this system you can use Computronics Tapes as a file storage like Floppy
@@ -365,7 +365,7 @@ function tapfat.proxy(address)
 			if not component.isAvailable('data') then return nil, 'inflate: Data card required' end
 			if not string.unpack then return nil, 'string.unpack: Lua 5.3 required' end
 			rawtm = component.data.inflate(string.unpack('s2', tabsec))
-		else
+		elseif tabsec:sub(0,2) ~= "\0\0" then
 			if not lzssdcom then return nil, 'LZSS decompression: Lua 5.3 required' end
 			rawtm = lzssdcom(string.unpack('s2', tabsec))
 		end
@@ -407,7 +407,13 @@ function tapfat.proxy(address)
 			end
 		end
 		local res, err = proxyObj.setTable({{}, {{8192, math.ceil(siz)-8192}}})
-		if not res then return res, err else return true end
+		if not res then return res, err
+		else 
+			if component.invoke(address, "getLabel") == "" then
+				component.invoke(address, "setLabel", "TapFAT Data Tape")
+			end
+			return true
+		end
 	end
 	
 	proxyObj.isDirectory = function(path)
@@ -430,7 +436,7 @@ function tapfat.proxy(address)
 		local seg = segments(path)
 		local fil = oprval(seg, fat[1])
 		if not fil then return 0 end
-		return fil[2]
+		return fil[2] or 0
 	end
 	
 	proxyObj.list = function(path)
