@@ -74,13 +74,6 @@ local function pull(arg1, arg2)
 	end
 end
 
-local function sleep(timeout)
-	local deadline = computer.uptime() + (timeout or 0)
-	repeat
-		event.pull(deadline - computer.uptime())
-	until computer.uptime() >= deadline
-end
-
 local function msgBox(contls, btok, tabl, hlt)
 	btok = '  '..btok..'  '
 	local W=ulen(btok)
@@ -504,7 +497,7 @@ local function execute()
 		engine.drawText(111-math.ceil(ulen(txt)/2), 27, 0xFF0000, txt)
 		if frRun then
 			drawEdit(locale.exec)
-			sleep(1.5)
+			event.sleep(1.5)
 			msgBox(locale.errFirst or {tmissing}, locale.ok or tmissing)
 			engine.drawImage(1, 1, bcontrp)
 			drawTab()
@@ -602,7 +595,7 @@ local function editor()
 				stat, err = execute()
 				if stat then
 					drawEdit(locale.exec)
-					sleep(1.5)
+					event.sleep(1.5)
 					return true
 				end
 			elseif touch >= 82 and touch <= 90 and key >= 33 and key <= 35 then
@@ -746,7 +739,7 @@ for i=30,5,-5 do
 	engine.clear()
 	engine.drawImage(30, i, gamelogo)
 	engine.update()
-	sleep(0.2)
+	event.sleep(0.2)
 end
 engine.drawText(65, 3, 0xFFFFFF, "2019 (c)  CAT IN THE DARK")
 engine.drawText(65, 4, 0xFFFFFF, "2021 (c)  Compys S&N Systems")
