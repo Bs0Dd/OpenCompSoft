@@ -1,4 +1,4 @@
-local gVER = "v1.01"
+local gVER = "v1.02"
 
 local engine = require("Screen")
 local GUI = require("GUI")
@@ -139,8 +139,8 @@ local function qHelp()
 	engine.drawText(34, 10, 0x00FF00, "A, B, X, Y")
 	engine.drawText(28, 13, 0x00FF00, "AVAILABLE INSTRUCTIONS:")
 	engine.drawText(11, 15, 0x00FF00, "INT <NUM OR REG> - BURNER INTERRUPTIONS")
-	engine.drawText(16, 16, 0x00FF00, "42 - ENABLE BURNING")
-	engine.drawText(16, 17, 0x00FF00, "43 - DISABLE BURNING")
+	engine.drawText(16, 16, 0x00FF00, "42 - DISABLE BURNING")
+	engine.drawText(16, 17, 0x00FF00, "43 - ENABLE BURNING")
 	engine.drawText(16, 18, 0x00FF00, "44 - MOVE BURNER TO COORDINATES FROM X & Y REGS")
 	engine.drawText(11, 20, 0x00FF00, "MOV <REG> <NUM OR REG> - MOVE <NUM OR REG> TO <REG>")
 	engine.drawText(11, 22, 0x00FF00, "ADD <REG> <NUM OR REG> - ADD <NUM OR REG> TO <REG>")
