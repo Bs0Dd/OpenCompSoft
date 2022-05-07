@@ -1,4 +1,4 @@
-local gVER = "v1.02"
+local gVER = "v1.03"
 
 local engine = require("NyaDraw")
 local component = require("component")
@@ -209,40 +209,13 @@ local function loadTsk()
 end
 
 local function vClean()
-	vyzhCur = {
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-	}
+	vyzhCur = {}
+	for i=1, 32, 1 do
+		vyzhCur[i] = {}
+		for j=1, 32, 1 do
+			vyzhCur[i][j] = 0
+		end
+	end
 end
 
 local function pattEq()
@@ -561,7 +534,7 @@ local function editor()
 			stat, err = nil, nil
 			if key == 200 then
 				sOpY = sOpY-1 == 0 and 1 or sOpY-1
-				if sOpY >= 40 then drawFrom = drawFrom - 1 end
+				if sOpY > 38 and sOpY-drawFrom < 38 then drawFrom = drawFrom - 1 end
 			elseif key == 208 then
 				sOpY = sOpY+1 > #cmdCur and #cmdCur or sOpY+1
 				if sOpY > 39 and sOpY<#cmdCur then drawFrom = drawFrom+1 > #cmdCur and drawFrom or drawFrom + 1 end
@@ -581,7 +554,7 @@ local function editor()
 					table.remove(cmdCur, sOpY)
 					sOpY = sOpY-1 == 0 and 1 or sOpY-1
 				end
-				if sOpY >= 40 then drawFrom = drawFrom - 1 end
+				if sOpY > 38 then drawFrom = drawFrom == 1 and 1 or drawFrom - 1 end
 			elseif key >= 2 and key <= 11 and sOpX > 1 then
 				addNum(key == 11 and 0 or key-1)
 			elseif key == 12 and sOpX > 1 then
@@ -679,22 +652,25 @@ local function editor()
 				end
 			elseif touch >= 82 and touch <= 90 and key >= 39 and key <= 41 then
 				if sOpX == 1 then
-					cmdCur[sOpY] = {'INT', 42, ''}  sOpY = sOpY+1
-					 if not cmdCur[sOpY] then table.insert(cmdCur, {'', '', ''}) end
+					if not cmdCur[sOpY+1] then table.insert(cmdCur, {'', '', ''}) end
+					cmdCur[sOpY] = {'INT', 42, ''} sOpY = sOpY+1
+					if sOpY > 39 then drawFrom = drawFrom + 1 end
 				else
 					addNum(7)
 				end
 			elseif touch >= 94 and touch <= 102 and key >= 39 and key <= 41 then
 				if sOpX == 1 then
-					cmdCur[sOpY] = {'INT', 43, ''}  sOpY = sOpY+1
-					if not cmdCur[sOpY] then table.insert(cmdCur, {'', '', ''}) end
+					if not cmdCur[sOpY+1] then table.insert(cmdCur, {'', '', ''}) end
+					cmdCur[sOpY] = {'INT', 43, ''} sOpY = sOpY+1
+					if sOpY > 39 then drawFrom = drawFrom + 1 end
 				else
 					addNum(8)
 				end
 			elseif touch >= 105 and touch <= 114 and key >= 39 and key <= 41 then
 				if sOpX == 1 then
-					cmdCur[sOpY] = {'INT', 44, ''}  sOpY = sOpY+1
-					if not cmdCur[sOpY] then table.insert(cmdCur, {'', '', ''}) end
+					if not cmdCur[sOpY+1] then table.insert(cmdCur, {'', '', ''}) end
+					cmdCur[sOpY] = {'INT', 44, ''} sOpY = sOpY+1
+					if sOpY > 39 then drawFrom = drawFrom + 1 end
 				else
 					addNum(9)
 				end
