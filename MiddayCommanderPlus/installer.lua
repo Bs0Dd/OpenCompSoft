@@ -148,7 +148,7 @@ local ADDITIONAL = {
                  {
                     url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Files/blyadian.mcl",
                     path = "/usr/misc/blyadian.mcl",
-                    absolute = false
+                    absolute = true
                  }
         }
     }
