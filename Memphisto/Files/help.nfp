@@ -21,4 +21,4 @@
 	{0xFFFFFF, "DEF", " - Exit from application or undo address bar input"}}},
 { 'image', 60, 5, "../keys.pic"},
 { 'border', 1, 19, 90, 0x00FFFF, "DEF", 'dpseudo'},
-{ 'text', 1, 20, 0x00FFFF, "DEF", "Browser developing © 2020-2021 Compys S&N Systems"} }
+{ 'text', 1, 20, 0x00FFFF, "DEF", "Browser developing © 2020-2022 Compys S&N Systems"} }

@@ -1,5 +1,0 @@
-{ label= 'No answer!',
-{ 'text', 4, 2, 0xFF0000, "DEF", "[OOPS! No answer from server!]"},
-{ 'text', 1, 4, 0xFFFFFF, "DEF", "Sorry, but I can't connect to server, please check if address is correct or server is working."},
-{ 'border', 1, 8, 90, 0x00FFFF, "DEF", 'dpseudo'},
-{ 'text', 1, 9, 0x00FFFF, "DEF", "Browser developing © 2020-2021 Compys S&N Systems"} }

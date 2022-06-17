@@ -3,18 +3,11 @@ NFPL web browser for OpenComputers.
 
 ![Memphisto browser](https://i.imgur.com/O8214Ji.png)
 
-## Minimal requirements
+## Requirements
 + Processor: Tier 1.
-+ Video: Tier 2.
-+ RAM: 768Kb.
-+ Hard Disk: At least 42Kb of free space.
-+ Internet Card.
-
-## Recommended requirements
-+ Processor: Tier 3.
 + Video: Tier 3.
 + RAM: 1Mb or higher.
-+ Hard Disk: At least 42Kb of free space.
++ Hard Disk: At least 52Kb of free space.
 + Internet Card.
 
 ## How to get started 

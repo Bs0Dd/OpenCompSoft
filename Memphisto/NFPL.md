@@ -1,7 +1,7 @@
 # NFPL - Network Formatted Page Language
 NFPL is a special web page language for OpenComputers which is adapted to the peculiarities of computers from this mod.  
 Written by [Bs0Dd](https://github.com/Bs0Dd).  
-Actual version: **0.0.2** (07.03.2021)
+Actual version: **0.0.3** (17.06.2022)
 ## Page structure  
 NFPL page (*.nfp) - lua serialized array containing page parameters and objects.  
 For example:
@@ -83,7 +83,7 @@ Looks like text object but starts file downloading on click.
 | *int* | y | Y coordinate |
 | *string* | picpath | Path to picture |  
 
-Supports only OCIF5, OCIF6 and OCIF7 pictures.  
+Supports only OCIF5-8 pictures.  
 Converter is [here](https://github.com/IgorTimofeev/OCIFImageConverter).
 
 ![Images demo](https://i.imgur.com/aDfnjtb.png) 
