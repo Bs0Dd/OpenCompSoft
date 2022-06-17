@@ -1,9 +1,9 @@
---[[               Midday Commander Plus Ver. 1.2b ]]--
+--[[               Midday Commander Plus Ver. 1.3a ]]--
 --[[         Original by Zer0Galaxy & Neo & Totoro ]]--
 --[[                        Plus version by Bs()Dd ]]--
---[[ 2015-2016, 2020-2021  (c)  No rights reserved ]]--
+--[[ 2015-2016, 2020-2022  (c)  No rights reserved ]]--
 
-local VER = '1.2b'
+local VER = '1.3a'
 
 local unicode = require('unicode')
 local len=unicode.len
@@ -19,6 +19,24 @@ local keyboard = require('keyboard')
 local seriz = require('serialization')
 
 local configPath = "/etc/mc.cfg"
+
+if not fs.exists(configPath) then
+  local file, why = io.open(configPath, 'w')
+  if file == nil then
+    print("Can't create config file: "..(why or "unknown reason"))
+    os.exit()
+  end
+  file:write([[{LocaleFile = '/usr/misc/english.mcl',
+ThemeFile = '/usr/misc/standard.mct',
+ClickDelay = 0.5,
+Editor = 'edit',
+Associations = {
+  ['.txt'] = 'edit',
+  ['.cfg'] = 'edit'
+  }
+}]])
+  file:close()
+end
 
 local function LoadTable(path, name)
   local unseriz
@@ -755,7 +773,8 @@ Find =Fpanel:new(1,'')
 Active =Rght
 
 print('The Midday Commander Plus, Version '..VER)
-print('Not Copyright (C) 2015-2016, 2020-2021 by Zer0Galaxy, Neo, Totoro & Bs()Dd')
+print('Not Copyright (C) 2015-2016 Zer0Galaxy, Neo, Totoro')
+print('                  2020-2022 Compys S&N Systems')
 
 saveScreen()
 ShowPanels()

@@ -14,7 +14,7 @@ Insert Internet card and type: `pastebin run pc73b8bB`
 
 The program comes with:
    1. Language mcl files for Russian and English (by default, English is set)
-   2. Three mct themes - "Standart", "Redstone" and "Darkness" (alas, I am not a designer, so the absence of eyelash in themes is not guaranteed)
+   2. Three mct themes - "Standard", "Redstone" and "Darkness" (alas, I am not a designer, so the absence of eyelash in themes is not guaranteed)
 
 ## Description
 The programs supports any screens with any color depth or resolution.
