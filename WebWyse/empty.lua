@@ -673,7 +673,6 @@ end
 local function drawCompForm()
     gpu.fill(winx+3, winy+3, 44, 10, ' ')
     for i=0,(#ADDITIONAL-cdf < 9 and #ADDITIONAL-cdf or 9) do
-        --gpu.set(1,i+1, ""..i.." "..cmy.." "..(i+1 == cmy and "thru" or "fals"))
         if i+1 == cmy then
             setColor(sformcol)
             gpu.fill(winx+3, winy+i+3, 44, 1, " ")
