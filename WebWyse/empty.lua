@@ -128,7 +128,7 @@ local licx, licy, limx = 1, 1, 1
 local instpath = INSTALLPATH or ''
 local cputier, vidtier, ram, comps 
 local cpuok, vidok, ramok, compok, reqok = true, true, true, true
-local cmy, csel, cdf = 1, 1, 1
+local cmy, cdf = 1, 1
 local totf, fildwl, filsiz, filsdw, cfnam = 0, 0, 0, 0
 
 if gpu.maxDepth() > 1 then
