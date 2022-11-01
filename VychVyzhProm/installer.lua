@@ -212,6 +212,17 @@ local ADDITIONAL = {
                     absolute = false
                  }
         }
+    },
+    {
+        name = "Install VychVyzhProm Tasks Editor (VVPTask)",
+        selected = false,
+        size = 14313,
+        files = {
+                 {
+                    url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/vvptask.lua",
+                    path = "vvptask.lua",
+                    absolute = false
+                 }
     }
 }
 
