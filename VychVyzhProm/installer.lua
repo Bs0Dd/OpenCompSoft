@@ -214,7 +214,7 @@ local ADDITIONAL = {
         }
     },
     {
-        name = "Install VychVyzhProm Tasks Editor (VVPTask)",
+        name = "Install VychVyzhProm Tasks Editor",
         selected = false,
         size = 14313,
         files = {
@@ -223,6 +223,7 @@ local ADDITIONAL = {
                     path = "vvptask.lua",
                     absolute = false
                  }
+        }
     }
 }
 
