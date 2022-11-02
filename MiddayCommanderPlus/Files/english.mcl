@@ -16,7 +16,7 @@ Help = {
     'Alt+Enter  - Hide panels',
     'F1 - This help',
     'F4 - Edit file',
-    'Shift+F4 - Create new file',
+    'Shift+F3 - Create new file',
     'F5 - Copy file/dir',
     'F6 - Move file/dir',
     'F7 - Create directory',
