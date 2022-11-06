@@ -65,12 +65,12 @@ Associations do not work if the file is launched from the manager command line.
 `F1` — show help.  
 <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Help.png" alt="Screenshot 4: The help window" width="230" height="146">
 
-`F4` — open an editor with the selected file.
+`F3` — open an editor with the selected file.
 
-`Shift` + `F4` — create a new file.  
+`Shift` + `F3` — create a new file.  
 <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Newfile.png" alt="Screenshot 5: The &#34;Create new file&#34; dialog" width="230" height="146">
 
-`F5`/`F6` — copy/move a selected file to the another panel's current directory. You can
+`F4`/`F5` — copy/move a selected file to the another panel's current directory. You can
 copy under another name if you want so.  
 <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/MiddayCommanderPlus/Screenshots/Eng/Copy.png" alt="Screenshot 6: The &#34;Copy the file&#34; dialog" width="230" height="146">
 
