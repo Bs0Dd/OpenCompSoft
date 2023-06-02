@@ -1,4 +1,4 @@
---WebWyse 1.0 installer by Compys S&N Systems (2022). 
+--WebWyse 1.0 installer by Compys S&N Systems (2022).
 --Configuration zone.
 
 --Name of the product being installed.
@@ -126,7 +126,7 @@ local stepsDraw, stepsEvent
 local cachedlic, maxi
 local licx, licy, limx = 1, 1, 1
 local instpath = INSTALLPATH or ''
-local cputier, vidtier, ram, comps 
+local cputier, vidtier, ram, comps
 local cpuok, vidok, ramok, compok, reqok = true, true, true, true
 local cmy, cdf = 1, 1
 local totf, fildwl, filsiz, filsdw, cfnam = 0, 0, 0, 0
@@ -274,12 +274,12 @@ end
 
 local function smallInfoDlg(text, color)
     local x, y, maxlen = smallDlg(text, color)
-    
+
     setColor(butcol)
     local keyx = math.ceil(x+(maxlen/2)-3)
     gpu.set(keyx, y+#text, "   Ok   ")
-    
-    while true do 
+
+    while true do
         local ev, _, mx, key = event.pull()
         if (ev == "key_down" and mx == 13) or
                 (ev == "touch" and key == y+#text and mx >= keyx and mx <= keyx+7) then
@@ -295,11 +295,11 @@ end
 
 local function smallAlertDlg(text)
     local x, y = smallDlg(text, errcol)
-        
+
     setColor(butcol)
     gpu.set(x+3, y+#text, " (Y)es  ")
     gpu.set(x+17, y+#text, "  (N)o  ")
-    while true do 
+    while true do
         local ev, _, mx, key = event.pull()
         if ev == "key_down" then
             if mx == 78 or mx == 110 then
@@ -349,7 +349,7 @@ local function stepWelc()
     gpu.set(winx+12, winy+9, "and configure the software.")
     gpu.set(winx+10, winy+10, "Press \"Next →\" (→) to continue")
     gpu.set(winx+11, winy+11, "or \"Cancel\" (ALT-X) to exit.")
-    
+
     setColor(butcol)
     gpu.set(winx+3, winy+14, " Cancel ")
     gpu.set(winx+39, winy+14, " Next → ")
@@ -365,7 +365,7 @@ local function welcEvent()
                 return
             end
         elseif ev == "touch" then
-            if key == winy+14 and mx >= winx+3 and mx <= winx+10 then exitInst(true) 
+            if key == winy+14 and mx >= winx+3 and mx <= winx+10 then exitInst(true)
             elseif key == winy+14 and mx >= winx+39 and mx <= winx+46 then return end
         end
     end
@@ -415,9 +415,9 @@ local function downlLic()
         LICENSE = bseerr.."received code "..math.floor(rcod).." ("..rcon..")."
         return
     end
-                    
+
     LICENSE = ""
-                    
+
     while true do
         local data, reas = handle.read(math.huge)
         if data then
@@ -435,26 +435,26 @@ end
 
 local function stepLic()
     gpu.set(winx+9, winy+1, "Do you agree with this license?")
-    
+
     setColor(butcol)
     gpu.set(winx+3, winy+14, "  (N)o  ")
     gpu.set(winx+30, winy+14, " (B)ack ")
     gpu.set(winx+39, winy+14, " (Y)es  ")
-    
+
     if not cachedlic then
         if not LICENSE and LICENSEURL then
             downlLic()
         end
-        
+
         cachedlic = {}
         for str in slines(LICENSE) do
             table.insert(cachedlic, str)
         end
         limx = maxStrLen(cachedlic)
     end
-    
+
     maxi = #cachedlic > 9 and #cachedlic - 9 or #cachedlic
-    
+
     setColor(formcol)
     drawLicForm()
 end
@@ -515,8 +515,8 @@ end
 
 local function difNotif(par1, par2, mode, flag)
     local text = {}
-    
-    if par1 == nil or (type(par1) == 'table' and #par1 == 0) then 
+
+    if par1 == nil or (type(par1) == 'table' and #par1 == 0) then
         text[1] = "Required: Not defined"
     elseif mode == 3 then
         local reqstr = "Required: "
@@ -544,13 +544,13 @@ local function difNotif(par1, par2, mode, flag)
         text[1] = "Required: Tier "..par1
         text[2] = "You have: Tier "..par2
     end
-    
+
     smallInfoDlg(text, flag and normcol or errcol)
 end
 
 local function checkSysReq()
     reqok = true
-    
+
     if MINREQ.CPU and type(MINREQ.CPU) == 'number' then
         local pcinfo = pc.getDeviceInfo()
         for _, cmp in pairs(pcinfo) do
@@ -562,20 +562,20 @@ local function checkSysReq()
         cpuok = cputier >= MINREQ.CPU
         if not cpuok then reqok = false end
     end
-    
+
     if MINREQ.VIDEO and type(MINREQ.VIDEO) == 'number' then
         local dept = gpu.maxDepth()
         vidtier = (dept == 8 and 3) or (dept == 4 and 2) or 1
         vidok = vidtier >= MINREQ.VIDEO
         if not vidok then reqok = false end
     end
-    
+
     if MINREQ.RAM and type(MINREQ.RAM) == 'number' then
         ram = pc.totalMemory()
         ramok = ram >= MINREQ.RAM
         if not ramok then reqok = false end
     end
-    
+
     if MINREQ.COMPONENTS and type(MINREQ.COMPONENTS) == 'table' then
         comps = {}
         for _, comn in pairs(MINREQ.COMPONENTS) do
@@ -584,29 +584,29 @@ local function checkSysReq()
         compok = #comps == #MINREQ.COMPONENTS
         if not compok then reqok = false end
     end
-    
+
     if reqok then
         gpu.set(winx+12, winy+1, "Your computer fully meets")
-        
+
     else
         gpu.set(winx+11, winy+1, "Your computer does not meet")
         gpu.set(winx+5, winy+3, "Select the desired section for details.")
     end
     gpu.set(winx+12, winy+2, "the minimum requirements.")
-    
+
     gpu.set(winx+10, winy+5, "(P)rocessor   :")
     gpu.set(winx+10, winy+7, "(M)emory      :")
     gpu.set(winx+10, winy+9, "(V)ideosystem :")
     gpu.set(winx+10, winy+11, "(С)omponents  :")
-    
+
     local ords, i = {cpuok, ramok, vidok, compok}, 5
-    
+
     for _, cmp in pairs(ords) do
         setColor(cmp and reqokcol or reqercol)
         gpu.set(winx+26, winy+i, cmp and "Meets" or "Does not meet")
         i = i + 2
     end
-    
+
     setColor(butcol)
     gpu.set(winx+3, winy+14, " Cancel ")
     gpu.set(winx+30, winy+14, " ← Back ")
@@ -691,7 +691,7 @@ local function drawCompForm()
         end
         gpu.setForeground(formcol[1])
     end
-    
+
 end
 
 local function scomUp()
@@ -721,12 +721,12 @@ end
 
 local function addComps()
     gpu.set(winx+6, winy+1, "You can install additional components:")
-    
+
     setColor(butcol)
     gpu.set(winx+3, winy+14, " Cancel ")
     gpu.set(winx+30, winy+14, " ← Back ")
     gpu.set(winx+39, winy+14, " Next → ")
-    
+
     setColor(formcol)
     drawCompForm()
 end
@@ -759,8 +759,12 @@ local function addCompsEvent()
             elseif key == winy+14 and mx >= winx+39 and mx <= winx+46 then
                 return
             elseif key >= winy+3 and key <= winy+12 and mx >= winx+3 and mx <= winx+46 then
-                ADDITIONAL[(key-winy-3)+cdf].selected = not ADDITIONAL[(key-winy-3)+cdf].selected
-                drawCompForm()
+                local sindx = (key-winy-3)+cdf
+                if #ADDITIONAL >= sindx then
+                    cmy = sindx-cdf+1
+                    ADDITIONAL[sindx].selected = not ADDITIONAL[sindx].selected
+                    drawCompForm()
+                end
             end
         elseif ev == "scroll" then
             if sd == 1 then scomUp() else scomDown() end
@@ -775,7 +779,7 @@ local function checkPath()
         smallInfoDlg({"Installation path cannot be empty!", "Please enter the path."}, errcol)
         return false
     end
-    
+
     if not fs.exists(instpath) then
         local res, prob = fs.makeDirectory(instpath)
         if not res then
@@ -785,17 +789,17 @@ local function checkPath()
         end
         return true
     end
-    
+
     local disk = fs.get(instpath)
     if disk.isReadOnly() then
         smallInfoDlg({"This disk is write protected!", "Please unprotect the disk and try again."}, errcol)
         return false
     end
-    
+
     if MINSPACE then
         local free = disk.spaceTotal() - disk.spaceUsed()
         if free < MINSPACE then
-            smallInfoDlg({"Not enough space for installation!", 
+            smallInfoDlg({"Not enough space for installation!",
                       "Please free at least "..formatSize(MINSPACE - free),
                       "of space and try again."}, errcol)
             return false
@@ -817,21 +821,21 @@ local function stepInsp()
     gpu.set(winx+3, winy+4, "Be aware that some files (such as libraries)")
     gpu.set(winx+8, winy+5, "may be installed in system folders.")
     gpu.set(winx+3, winy+8, "Install to:")
-    
+
     local addsiz = MINSPACE or 0
     if ADDITIONAL and #ADDITIONAL > 0 then
         for _, cmp in pairs(ADDITIONAL) do
             if cmp.selected then addsiz = addsiz + cmp.size end
         end
     end
-    
+
     if addsiz > 0 then gpu.set(winx+3, winy+11, "Space required: "..formatSize(addsiz)) end
-    
+
     setColor(butcol)
     gpu.set(winx+3, winy+14, " Cancel ")
     gpu.set(winx+30, winy+14, " ← Back ")
     gpu.set(winx+39, winy+14, " Next → ")
-    
+
     setColor(formcol)
     drawPathForm()
 end
@@ -864,10 +868,10 @@ local function inspEvent()
             elseif key == winy+14 and mx >= winx+39 and mx <= winx+46 then
                 if checkPath() then return end
             end
-        elseif eve == "clipboard" then 
+        elseif eve == "clipboard" then
             instpath = instpath..mx
             drawPathForm()
-        end    
+        end
     end
 end
 
@@ -880,7 +884,7 @@ local function stepReady()
     gpu.set(winx+9, winy+6, "Click \"Go\" to begin installation.")
     gpu.set(winx+13, winy+9, "Or click \"Back\" to change")
     gpu.set(winx+15, winy+10, "installation options.")
-    
+
     setColor(butcol)
     gpu.set(winx+3, winy+14, " Cancel ")
     gpu.set(winx+30, winy+14, " ← Back ")
@@ -921,13 +925,13 @@ local function drawProg()
     local cfiltext = "Downloading file: "..cfnam
     if len(cfiltext) > 46 then cfiltext = cfiltext:sub(1,44)..".." end
     gpu.set(winx+25-(len(cfiltext)/2), winy+5, cfiltext)
-    
+
     local ddattext = "Downloaded data: "..formatSize(filsdw).."/"..formatSize(filsiz)
     gpu.set(winx+25-(len(ddattext)/2), winy+7, ddattext)
-    
+
     local totdtext = "Downloaded files: "..fildwl.."/"..totf
     gpu.set(winx+25-(len(totdtext)/2), winy+11, totdtext)
-    
+
     gpu.setForeground(problcol)
     gpu.set(winx+4, winy+6, string.rep("━", 42))
     gpu.set(winx+4, winy+10, string.rep("━", 42))
@@ -988,7 +992,7 @@ local function dowEvent()
             EXITNOTE = nil
             exitInst()
         end
-   
+
         if not handle then
             downErr("make internet request", "invalid URL-address")
             EXITNOTE = nil
@@ -1001,7 +1005,7 @@ local function dowEvent()
             stat, reas = handle.finishConnect()
             if pc.uptime() > time + 40 then break end
         end
-         
+
         if stat == nil then
             downErr("connect", reas == file.url and "can't get file" or reas)
             EXITNOTE = nil
@@ -1032,7 +1036,7 @@ local function dowEvent()
         end
         filsdw = 0
         drawProg()
-        
+
         while true do
             local data, reas = handle.read(math.huge)
             if data then
@@ -1051,7 +1055,7 @@ local function dowEvent()
                 end
             end
         end
-        
+
         fildwl = fildwl + 1
         drawProg()
     end
@@ -1064,7 +1068,7 @@ local function stepFin()
     gpu.set(winx+10, winy+5, "has been successfully installed")
     gpu.set(winx+17, winy+6, "on your computer.")
     gpu.set(winx+9, winy+9, "Click \"Ok\" to exit the installer.")
-    
+
     setColor(butcol)
     gpu.set(winx+39, winy+14, "   Ok   ")
 end
