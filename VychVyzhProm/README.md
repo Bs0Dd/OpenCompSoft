@@ -1,6 +1,6 @@
 # VychVyzhProm (ВычВыжПром)
 
-![Interface](https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/Interface.png)
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/Start.png" alt="Start" width="500" height="317"> <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/Menu.png" alt="Menu" width="500" height="317"> <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/Interface.png" alt="Interface" width="500" height="317"> <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/Task.png" alt="Task" width="500" height="317">
 
 Welcome, comrade!
 
@@ -23,3 +23,11 @@ Write to console: `pastebin run nw0FNGjr`
 * **Processor** - Tier 1
 * **RAM Memory** - Not less than 1.5 Mb (Tier 3 x2)
 * **Hard drive** - Not less than 95 Kb of free space
+
+## VVPTask
+
+<img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/VVPTStart.png" alt="VVPTStart" width="500" height="317"> <img src="https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/VychVyzhProm/VVPTInt.png" alt="VVPTInt" width="500" height="317">
+
+In this editor, you can create your own tasks for the game.
+Tasks are stored as `Tasks/task*.vtf` where `*` is the task number.
+By replacing or adding tasks, you can change the game, simplifying or complicating it.
