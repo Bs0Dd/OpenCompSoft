@@ -111,6 +111,9 @@ Read [this text](https://github.com/Bs0Dd/OpenCompSoft/blob/master/TapFAT/DiskTa
 
 ## Changelog
 
+* Version 1.55
+	* Lua 5.4 support.
+	* Fixed tape type detection.
 * Version 1.54
 	* Fixed bug when lastModified("") returned a *nil*.
 	* Fixed bug with clear tapes.
