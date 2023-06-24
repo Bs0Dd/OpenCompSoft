@@ -13,77 +13,77 @@ for k in component.list('filesystem') do
 end
 
 local function ser(value)
-  local id = "^[%a_][%w_]*$"
-  local ts = {}
-  local result_pack = {}
-  local function recurse(current_value, depth)
-    local t = type(current_value)
-    if t == "number" then
-      if current_value ~= current_value then
-        table.insert(result_pack, "0/0")
-      elseif current_value == math.huge then
-        table.insert(result_pack, "math.huge")
-      elseif current_value == -math.huge then
-        table.insert(result_pack, "-math.huge")
-      else
-        table.insert(result_pack, tostring(current_value))
-      end
-    elseif t == "string" then
-      table.insert(result_pack, (string.format("%q", current_value):gsub("\\\n","\\n")))
-    elseif
-      t == "nil" or
-      t == "boolean" then
-      table.insert(result_pack, tostring(current_value))
-    elseif t == "table" then
-      ts[current_value] = true
-      local f
-	  local mt = getmetatable(current_value)
-      f = table.pack((mt and mt.__pairs or pairs)(current_value))
-      local i = 1
-      local first = true
-      table.insert(result_pack, "{")
-      for k, v in table.unpack(f) do
-        if not first then
-          table.insert(result_pack, ",")
-        end
-        first = nil
-        local tk = type(k)
-        if tk == "number" and k == i then
-          i = i + 1
-          recurse(v, depth + 1)
-        else
-          if tk == "string" and string.match(k, id) then
-            table.insert(result_pack, k)
-          else
-            table.insert(result_pack, "[")
-            recurse(k, depth + 1)
-            table.insert(result_pack, "]")
-          end
-          table.insert(result_pack, "=")
-          recurse(v, depth + 1)
-        end
-      end
-      ts[current_value] = nil
-      table.insert(result_pack, "}")
-    else
-      error("unsupported type: " .. t,0)
-    end
-  end
-  recurse(value, 1)
-  local result = table.concat(result_pack)
-  return result
+	local id = "^[%a_][%w_]*$"
+	local ts = {}
+	local result_pack = {}
+	local function recurse(current_value, depth)
+		local t = type(current_value)
+		if t == "number" then
+			if current_value ~= current_value then
+				table.insert(result_pack, "0/0")
+			elseif current_value == math.huge then
+				table.insert(result_pack, "math.huge")
+			elseif current_value == -math.huge then
+				table.insert(result_pack, "-math.huge")
+			else
+				table.insert(result_pack, tostring(current_value))
+			end
+		elseif t == "string" then
+			table.insert(result_pack, (string.format("%q", current_value):gsub("\\\n","\\n")))
+		elseif
+			t == "nil" or
+			t == "boolean" then
+			table.insert(result_pack, tostring(current_value))
+		elseif t == "table" then
+			ts[current_value] = true
+			local f
+		local mt = getmetatable(current_value)
+			f = table.pack((mt and mt.__pairs or pairs)(current_value))
+			local i = 1
+			local first = true
+			table.insert(result_pack, "{")
+			for k, v in table.unpack(f) do
+				if not first then
+					table.insert(result_pack, ",")
+				end
+				first = nil
+				local tk = type(k)
+				if tk == "number" and k == i then
+					i = i + 1
+					recurse(v, depth + 1)
+				else
+					if tk == "string" and string.match(k, id) then
+						table.insert(result_pack, k)
+					else
+						table.insert(result_pack, "[")
+						recurse(k, depth + 1)
+						table.insert(result_pack, "]")
+					end
+					table.insert(result_pack, "=")
+					recurse(v, depth + 1)
+				end
+			end
+			ts[current_value] = nil
+			table.insert(result_pack, "}")
+		else
+			error("unsupported type: " .. t,0)
+		end
+	end
+	recurse(value, 1)
+	local result = table.concat(result_pack)
+	return result
 end
 
 local function unser(data)
-  local result, reason = load("return " .. data, "=data", nil, {math={huge=math.huge}})
-  if not result then
-    return nil, reason
-  end
-  local ok, output = pcall(result)
-  if not ok then
-    return nil, output
-  end
-  return output
+	local result, reason = load("return " .. data, "=data", nil, {math={huge=math.huge}})
+	if not result then
+		return nil, reason
+	end
+	local ok, output = pcall(result)
+	if not ok then
+		return nil, output
+	end
+	return output
 end
 
 local function copytb(source)
@@ -95,27 +95,27 @@ local function copytb(source)
 end
 
 local function segments(path)
-  local parts = {}
-  for part in path:gmatch("[^\\/]+") do
-    local current, up = part:find("^%.?%.$")
-    if current then
-      if up == 2 then
-        table.remove(parts)
-      end
-    else
-      table.insert(parts, part)
-    end
-  end
-  return parts
+	local parts = {}
+	for part in path:gmatch("[^\\/]+") do
+		local current, up = part:find("^%.?%.$")
+		if current then
+			if up == 2 then
+				table.remove(parts)
+			end
+		else
+			table.insert(parts, part)
+		end
+	end
+	return parts
 end
 
 local function canonical(path)
-  local result = table.concat(segments(path), "/")
-  if unicode.sub(path, 1, 1) == "/" then
-    return "/" .. result
-  else
-    return result
-  end
+	local result = table.concat(segments(path), "/")
+	if unicode.sub(path, 1, 1) == "/" then
+		return "/" .. result
+	else
+		return result
+	end
 end
 
 local function gettim(driveprops)
@@ -266,7 +266,7 @@ local function wrialloc(fil, data, address, seek)
 end
 
 local lzsscom, lzssdcom
-if computer.getArchitecture() == "Lua 5.3" then
+if computer.getArchitecture() ~= "Lua 5.2" then
 	lzsscom, lzssdcom = load([[return function(a)local b,c=1,{}local d=''local function e()for f=18,3,-1 do local g=string.sub(a,b,b+f-1)local h=string.find(d,g,1,true)if h then return h,g end end end;while b<=#a do local i,j=0,{}for f=0,7 do if b<=#a then local h,g=e()if h and#g>=3 then local k=h-1<<4|#g-3;j[#j+1]=string.pack('>I2',k)else i=i|(1<<f)g=string.sub(a,b,b)j[#j+1]=g end;d=string.sub(d..g,-4096)b=b+#g else break end end;if#j>0 then c[#c+1]=string.char(i)c[#c+1]=table.concat(j)end end;return table.concat(c)end,function(a)local b,c=1,{}local d=''while b<=#a do local i=string.byte(a,b)b=b+1;for f=1,8 do local g=nil;if i&1~=0 then if b<=#a then g=string.sub(a,b,b)b=b+1 end else if b+1<=#a then local k=string.unpack('>I2',a,b)b=b+2;local h=k>>4+1;local l=k&15+3;g=string.sub(d,h,h+l-1)end end;i=i>>1;if g then c[#c+1]=g;d=string.sub(d..g,-4096)end end end;return table.concat(c)end]])()
 end
 
@@ -315,10 +315,10 @@ function tapfat.proxy(address)
 			rawtm = tabsec:match("[^\0]+")
 		elseif tabsec:sub(3,4) == "\120\156" then
 			if not component.isAvailable('data') then error('inflate: Data card required',0) end
-			if not string.unpack then error('string.unpack: Lua 5.3 required',0) end
+			if not string.unpack then error('string.unpack: Lua 5.3 or newer required',0) end
 			rawtm = component.data.inflate(string.unpack('s2', tabsec))
-		else
-			if not lzssdcom then error('LZSS decompression: Lua 5.3 required',0) end
+		elseif tabsec:sub(0,2) ~= "\0\0" then
+			if not lzssdcom then error('LZSS decompression: Lua 5.3 or newer required',0) end
 			rawtm = lzssdcom(string.unpack('s2', tabsec))
 		end
 		if not rawtm or rawtm == "" then error('FAT corrupted: table not found',0) end
@@ -332,11 +332,11 @@ function tapfat.proxy(address)
 		if not proxyObj.isReady() then error('Device is not ready',0) end
 		local tstr = ser(tab)
 		if driveprops.tabcom == 1 then
-			if not lzsscom then error('LZSS compression: Lua 5.3 required',0) end
+			if not lzsscom then error('LZSS compression: Lua 5.3 or newer required',0) end
 			tstr = string.pack('s2', lzsscom(tstr))
 		elseif driveprops.tabcom == 2 then
 			if not component.isAvailable('data') then error('deflate: Data card required',0) end
-			if not string.pack then error('string.pack: Lua 5.3 required',0) end
+			if not string.pack then error('string.pack: Lua 5.3 or newer required',0) end
 			tstr = string.pack('s2', component.data.deflate(tstr))
 		end
 		if #tstr > 8192 then return nil, 'Not enough space for FAT' end
@@ -359,7 +359,13 @@ function tapfat.proxy(address)
 			end
 		end
 		local res, err = proxyObj.setTable({{}, {{8192, math.ceil(siz)-8192}}})
-		if not res then return res, err else return true end
+		if not res then return res, err
+		else
+			if component.invoke(address, "getLabel") == "" then
+				component.invoke(address, "setLabel", "TapFAT Data Tape")
+			end
+			return true
+		end
 	end
 	
 	proxyObj.isDirectory = function(path)
@@ -382,7 +388,7 @@ function tapfat.proxy(address)
 		local seg = segments(path)
 		local fil = oprval(seg, fat[1])
 		if not fil then return 0 end
-		return fil[2]
+		return fil[2] or 0
 	end
 	
 	proxyObj.list = function(path)
