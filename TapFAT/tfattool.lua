@@ -1,5 +1,5 @@
---[[Compys(TM) TapFAT Tape Configuration Tool v1.54
-	2021 (C) Compys S&N Systems
+--[[Compys(TM) TapFAT Tape Configuration Tool v1.55
+	2021-2023 (C) Compys S&N Systems
 	This is a tool for do some manipulations with TapFAT tapes
 	Please, load "tfatinit" driver firstly
 ]]
@@ -222,8 +222,8 @@ local function drawBack()
 	local posx = math.ceil((cx+42)/2)
 	local y = math.ceil(cy/10)
 	gpu.set(x, y  , ' ╔══════════════════════════════════════╗ ')
-	gpu.set(x, y+1, ' ║ TapFAT Tape Configuration Tool v1.54 ║ ')
-	gpu.set(x, y+2, ' ║      2021  © Compys S&N Systems      ║ ')
+	gpu.set(x, y+1, ' ║ TapFAT Tape Configuration Tool v1.55 ║ ')
+	gpu.set(x, y+2, ' ║    2021-2023  © Compys S&N Systems   ║ ')
 	gpu.set(x, y+3, ' ╚══════════════════════════════════════╝ ')
 	if gpu.maxDepth() > 1 then
 		gpu.setForeground(0xFFFF00)
@@ -357,7 +357,7 @@ while work do
 				local spacus, spacto = workwith.spaceUsed(), workwith.spaceTotal()
 			    local info = {left = true}
 			    info[1] = 'Label: '..(workwith.getLabel() == '' and '<No Label>' or workwith.getLabel())
-			    info[2] = 'Tape type: '..math.ceil((spacto+8192)/245760)..' Min'
+			    info[2] = 'Tape type: '..math.ceil((spacto+8192)/360000)..' Min'
 			    info[3] = 'Effective size: '..formatSize(spacto)
 			    info[4] = 'Free: '..formatSize(spacto-spacus)..' ('..100-math.ceil((spacus/spacto * 100))..'%)'
 			    info[5] = 'Mounted to: '..mnt

@@ -240,7 +240,7 @@ addBigButton(48, 6, locale.tapInfo, main).onTouch = function()
 	dialog.actionButtons.hidden = true
 	local spacUs, spacTo = tape.spaceUsed(), tape.spaceTotal()
 	dialog:addChild(GUI.text(3, 3, 0x4B4B4B, locale.label..(tape.getLabel() == '' and locale.noLabel or tape.getLabel())))
-	dialog:addChild(GUI.text(3, 4, 0x4B4B4B, locale.tapType..math.ceil((spacTo+8192)/245760)..' Min'))
+	dialog:addChild(GUI.text(3, 4, 0x4B4B4B, locale.tapType..math.ceil((spacTo+8192)/360000)..' Min'))
 	dialog:addChild(GUI.text(3, 5, 0x4B4B4B, locale.effSize..formatSize(spacTo)))
 	dialog:addChild(GUI.text(3, 6, 0x4B4B4B, locale.free..formatSize(spacTo-spacUs)..' ('..100-math.ceil((spacUs/spacTo * 100))..'%)'))
 	dialog:addChild(GUI.roundedButton(6, 9, 30, 1, 0x3C3C3C, 0xE1E1E1, 0xFFFFFF, 0x2D2D2D, locale.ok)).onTouch = function()

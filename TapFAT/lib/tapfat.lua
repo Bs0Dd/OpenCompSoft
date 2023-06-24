@@ -1,5 +1,5 @@
---[[Compys(TM) TapFAT Shared Library v1.54
-	2021 (C) Compys S&N Systems
+--[[Compys(TM) TapFAT Shared Library v1.55
+	2021-2023 (C) Compys S&N Systems
 	This is a driver library for a "Tape File Allocation Table" (or "TapFAT") system 
 	With this system you can use Computronics Tapes as a file storage like Floppy
 	The first 8Kb of a space is reserved for special FAT with info about files on tape
@@ -170,74 +170,74 @@ local function wrialloc(fil, data, address, seek)
 end
 
 local lzsscom, lzssdcom
-if require("computer").getArchitecture() == "Lua 5.3" then
+if require("computer").getArchitecture() ~= "Lua 5.2" then
 	lzsscom, lzssdcom = load([[return function(input)
-  local offset, output = 1, {}
-  local window = ''
-  local function search()
-    for i = 18, 3, -1 do
-      local str = string.sub(input, offset, offset + i - 1)
-      local pos = string.find(window, str, 1, true)
-      if pos then
-        return pos, str
-      end
-    end
-  end
-  while offset <= #input do
-    local flags, buffer = 0, {}
-    for i = 0, 7 do
-      if offset <= #input then
-        local pos, str = search()
-        if pos and #str >= 3 then
-          local tmp = ((pos - 1) << 4) | (#str - 3)
-          buffer[#buffer + 1] = string.pack('>I2', tmp)
-        else
-          flags = flags | (1 << i)
-          str = string.sub(input, offset, offset)
-          buffer[#buffer + 1] = str
-        end
-        window = string.sub(window .. str, -4096)
-        offset = offset + #str
-      else
-        break
-      end
-    end
-    if #buffer > 0 then
-      output[#output + 1] = string.char(flags)
-      output[#output + 1] = table.concat(buffer)
-    end
-  end
-  return table.concat(output)
+	local offset, output = 1, {}
+	local window = ''
+	local function search()
+		for i = 18, 3, -1 do
+			local str = string.sub(input, offset, offset + i - 1)
+			local pos = string.find(window, str, 1, true)
+			if pos then
+				return pos, str
+			end
+		end
+	end
+	while offset <= #input do
+		local flags, buffer = 0, {}
+		for i = 0, 7 do
+			if offset <= #input then
+				local pos, str = search()
+				if pos and #str >= 3 then
+					local tmp = ((pos - 1) << 4) | (#str - 3)
+					buffer[#buffer + 1] = string.pack('>I2', tmp)
+				else
+					flags = flags | (1 << i)
+					str = string.sub(input, offset, offset)
+					buffer[#buffer + 1] = str
+				end
+				window = string.sub(window .. str, -4096)
+				offset = offset + #str
+			else
+				break
+			end
+		end
+		if #buffer > 0 then
+			output[#output + 1] = string.char(flags)
+			output[#output + 1] = table.concat(buffer)
+		end
+	end
+	return table.concat(output)
 end, function(input)
-  local offset, output = 1, {}
-  local window = ''
-  while offset <= #input do
-    local flags = string.byte(input, offset)
-    offset = offset + 1
-    for i = 1, 8 do
-      local str = nil
-      if (flags & 1) ~= 0 then
-        if offset <= #input then
-          str = string.sub(input, offset, offset)
-          offset = offset + 1
-        end
-      else
-        if offset + 1 <= #input then
-          local tmp = string.unpack('>I2', input, offset)
-          offset = offset + 2
-          local pos = (tmp >> 4) + 1
-          local len = (tmp & (15)) + 3
-          str = string.sub(window, pos, pos + len - 1)
-        end
-      end
-      flags = flags >> 1
-      if str then
-        output[#output + 1] = str
-        window = string.sub(window .. str, -4096)
-      end
-    end
-  end
-  return table.concat(output)
+	local offset, output = 1, {}
+	local window = ''
+	while offset <= #input do
+		local flags = string.byte(input, offset)
+		offset = offset + 1
+		for i = 1, 8 do
+			local str = nil
+			if (flags & 1) ~= 0 then
+				if offset <= #input then
+					str = string.sub(input, offset, offset)
+					offset = offset + 1
+				end
+			else
+				if offset + 1 <= #input then
+					local tmp = string.unpack('>I2', input, offset)
+					offset = offset + 2
+					local pos = (tmp >> 4) + 1
+					local len = (tmp & (15)) + 3
+					str = string.sub(window, pos, pos + len - 1)
+				end
+			end
+			flags = flags >> 1
+			if str then
+				output[#output + 1] = str
+				window = string.sub(window .. str, -4096)
+			end
+		end
+	end
+	return table.concat(output)
 end]])()
 end
 
@@ -287,10 +287,10 @@ function tapfat.proxy(address)
 			rawtm = tabsec:match("[^\0]+")
 		elseif tabsec:sub(3,4) == "\120\156" then
 			if not component.isAvailable('data') then error('inflate: Data card required') end
-			if not string.unpack then error('string.unpack: Lua 5.3 required') end
+			if not string.unpack then error('string.unpack: Lua 5.3 or newer required') end
 			rawtm = component.data.inflate(string.unpack('s2', tabsec))
 		elseif tabsec:sub(0,2) ~= "\0\0" then
-			if not lzssdcom then error('LZSS decompression: Lua 5.3 required') end
+			if not lzssdcom then error('LZSS decompression: Lua 5.3 or newer required') end
 			rawtm = lzssdcom(string.unpack('s2', tabsec))
 		end
 		if not rawtm or rawtm == "" then error('FAT corrupted: table not found') end
@@ -304,11 +304,11 @@ function tapfat.proxy(address)
 		if not proxyObj.isReady() then error('Device is not ready') end
 		local tstr = ser(tab)
 		if driveprops.tabcom == 1 then
-			if not lzsscom then error('LZSS compression: Lua 5.3 required') end
+			if not lzsscom then error('LZSS compression: Lua 5.3 or newer required') end
 			tstr = string.pack('s2', lzsscom(tstr))
 		elseif driveprops.tabcom == 2 then
 			if not component.isAvailable('data') then error('deflate: Data card required') end
-			if not string.pack then error('string.pack: Lua 5.3 required') end
+			if not string.pack then error('string.pack: Lua 5.3 or newer required') end
 			tstr = string.pack('s2', component.data.deflate(tstr))
 		end
 		if #tstr > 8192 then return nil, 'Not enough space for FAT' end
