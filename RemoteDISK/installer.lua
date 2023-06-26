@@ -2,23 +2,23 @@
 --Configuration zone.
 
 --Name of the product being installed.
-local PRODUCTNAME = 'TapFAT'
+local PRODUCTNAME = 'RemoteDISK NetClient Utilities'
 
 --Strings for small background window. nil for disabled. Max 4 lines.
-local BACKWINTEXT = {'TapFAT Filesystem', '', 'Copyright (c) 2021 Compys S&N Systems'}
+local BACKWINTEXT = {'RemoteDISK NetClient Utilities', '', 'Developing © 2020 Compys S&N Systems'}
 
 --The text that will be shown in the console after a successful installation. nil for disabled.
-local EXITNOTE = "Type \"tfatinit\" to run mounter and \"tfattool\" for setup"
+local EXITNOTE = "Use commands \"rmdmt\" and \"rmdumt\" to connect or disconnect disks"
 
 --License for product. nil to use LICENSEURL or disabled.
 local LICENSE = [[For more information go to:
-https://github.com/Bs0Dd/OpenCompSoft/blob/master/TapFAT/README.md
+https://github.com/Bs0Dd/OpenCompSoft/blob/master/RemoteDISK/README.md
 
 ------------------------
-                 
+
 MIT License
 
-Copyright (c) 2018 
+Copyright (c) 2018
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -42,17 +42,17 @@ SOFTWARE.]]
 local LICENSEURL = nil
 
 --Default installation path. nil for empty.
-local INSTALLPATH = '/usr/bin/'
+local INSTALLPATH = "/usr/bin/"
 
 --Minimum space (in bytes) required for installation. nil for disable checking.
-local MINSPACE = 36864
+local MINSPACE = 14474
 
 --Minimal requirements for installation. nil for disable checking.
 local MINREQ = {
     CPU = 1, --Minimal CPU tier required for installation. nil for disable checking.
     VIDEO = 1, --Minimal videosystem tier required for installation. nil for disable checking
-    RAM = 262144, --Minimum RAM size required for installation. nil for disable checking.
-    COMPONENTS = {"tape_drive"} --Components required for installation. nil for none.
+    RAM = 196608, --Minimum RAM size required for installation. nil for disable checking.
+    COMPONENTS = {"modem"} --Components required for installation. nil for none.
 }
 
 --Colors for Tier 3 Videosystem.
@@ -93,18 +93,18 @@ local T1PROGRFIL = 0xFFFFFF -- Color for the filled part of the progress bar.
 --Basic files to download to your computer.
 local FILES = {
     {
-        url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/TapFAT/lib/tapfat.lua",
-        path = "/usr/lib/tapfat.lua",
+        url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/RemoteDISK/NetClient/libs/rmdfs.lua",
+        path = "/usr/lib/rmdfs.lua",
         absolute = true
     },
     {
-        url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/TapFAT/tfatinit.lua",
-        path = "tfatinit.lua",
+        url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/RemoteDISK/NetClient/rmdmt.lua",
+        path = "rmdmt.lua",
         absolute = false
     },
     {
-        url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/TapFAT/tfattool.lua",
-        path = "tfattool.lua",
+        url = "https://raw.githubusercontent.com/Bs0Dd/OpenCompSoft/master/RemoteDISK/NetClient/rmdumt.lua",
+        path = "rmdumt.lua",
         absolute = false
     }
 }

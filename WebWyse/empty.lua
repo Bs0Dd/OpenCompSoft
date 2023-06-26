@@ -536,7 +536,7 @@ local function difNotif(par1, par2, mode, flag)
             end
             havestr = havestr..val..", "
         end
-        table.insert(text, havestr:sub(1, -3))
+        table.insert(text, #par2 == 0 and havestr.."<none>" or havestr:sub(1, -3))
     elseif mode == 2 then
         text[1] = "Required: "..formatSize(par1)
         text[2] = "You have: "..formatSize(par2)
