@@ -1,25 +1,62 @@
---[[NyaDraw Graphic Engine v1.07 for OpenOS
+--[[NyaDraw Graphic Engine v1.20 for OpenOS
 	Standalone "Screen.lua" port from MineOS
 	More info on: https://github.com/Bs0Dd/OpenCompSoft/blob/master/NyaDraw/README.md
-	2015-2021 - ECS: https://github.com/IgorTimofeev
-	2021 - Bs0Dd: https://github.com/Bs0Dd
+	2015-2023 - ECS: https://github.com/IgorTimofeev
+	2021-2023 - Bs0Dd: https://github.com/Bs0Dd
 ]]
 
 local unicode = require("unicode")
 local computer = require("computer")
+local component = require("component")
 local bit32 = require("bit32")
 
 --------------------------------------------------------------------------------
 
-local bufferWidth, bufferHeight
-local currentFrameBackgrounds, currentFrameForegrounds, currentFrameSymbols, newFrameBackgrounds, newFrameForegrounds, newFrameSymbols
-local drawLimitX1, drawLimitX2, drawLimitY1, drawLimitY2
-local GPUProxy, GPUProxyGetResolution, GPUProxySetResolution, GPUProxyGetBackground, GPUProxyGetForeground, GPUProxySetBackground, GPUProxySetForeground, GPUProxyGet, GPUProxySet, GPUProxyFill
+local
+	componentInvoke,
 
-local mathCeil, mathFloor, mathModf, mathAbs, mathMin, mathMax = math.ceil, math.floor, math.modf, math.abs, math.min, math.max
-local tableInsert, tableConcat = table.insert, table.concat
-local colorIntegerToRGB, colorRGBToInteger, colorBlend
-local unicodeLen, unicodeSub = unicode.len, unicode.sub
+	mathCeil,
+	mathFloor,
+	mathAbs,
+	mathMin,
+	mathMax,
+
+	tableInsert,
+	tableConcat,
+
+	unicodeLen,
+	unicodeSub,
+
+	bufferWidth,
+	bufferHeight,
+
+	currentFrameBackgrounds,
+	currentFrameForegrounds,
+	currentFrameSymbols,
+	newFrameBackgrounds,
+	newFrameForegrounds,
+	newFrameSymbols,
+
+	drawLimitX1,
+	drawLimitX2,
+	drawLimitY1,
+	drawLimitY2,
+
+	GPUAddress =
+
+	component.invoke,
+
+	math.ceil,
+	math.floor,
+	math.abs,
+	math.min,
+	math.max,
+
+	table.insert,
+	table.concat,
+
+	unicode.len,
+	unicode.sub;
 
 --------------------------------------------------------------------------------
 
@@ -76,19 +113,21 @@ local function to24Bit(color8Bit)
 	return palette[color8Bit + 1]
 end
 
-if computer.getArchitecture and computer.getArchitecture() == "Lua 5.3" then
+if computer.getArchitecture and computer.getArchitecture() ~= "Lua 5.2" then
 	colorIntegerToRGB, colorRGBToInteger, colorBlend = load([[return function(integerColor)
 		return integerColor >> 16, integerColor >> 8 & 0xFF, integerColor & 0xFF
 	end,
+
 	function(r, g, b)
 		return r << 16 | g << 8 | b
 	end,
+
 	function(color1, color2, transparency)
 		local invertedTransparency = 1 - transparency
 		return
-			((color2 >> 16) * invertedTransparency + (color1 >> 16) * transparency) // 1 << 16 |
-			((color2 >> 8 & 0xFF) * invertedTransparency + (color1 >> 8 & 0xFF) * transparency) // 1 << 8 |
-			((color2 & 0xFF) * invertedTransparency + (color1 & 0xFF) * transparency) // 1
+			((color2 >> 16) * invertedTransparency + (color1 >> 16) * transparency) // 1.0 << 16 |
+			((color2 >> 8 & 0xFF) * invertedTransparency + (color1 >> 8 & 0xFF) * transparency) // 1.0 << 8 |
+			((color2 & 0xFF) * invertedTransparency + (color1 & 0xFF) * transparency) // 1.0
 	end]])()
 else
 	colorIntegerToRGB = function(integerColor)
@@ -98,9 +137,11 @@ else
 		g = g - g % 1
 		return r, g, integerColor - r * 65536 - g * 256
 	end
+
 	colorRGBToInteger = function(r, g, b)
 		return r * 65536 + g * 256 + b
 	end
+
 	colorBlend = function(color1, color2, transparency)
 		local invertedTransparency = 1 - transparency
 		local r1, r2 = color1 / 65536, color2 / 65536
@@ -116,17 +157,9 @@ end
 --------------------------------------------------------------------------------
 --AdvancedRead Subsystem (Ported by Bs()Dd)
 
-local function fold(init, op, ...)
-  local result = init
-  local args = table.pack(...)
-  for i = 1, args.n do
-    result = op(result, args[i])
-  end
-  return result
-end
-
 local function readUnicodeChar(file)
 	local byteArray = {string.byte(file:read(1))}
+
 	local nullBitPosition = 0
 	for i = 1, 7 do
 		if bit32.band(bit32.rshift(byteArray[1], 8 - i), 0x1) == 0x0 then
@@ -134,9 +167,11 @@ local function readUnicodeChar(file)
 			break
 		end
 	end
+
 	for i = 1, nullBitPosition - 2 do
 		table.insert(byteArray, string.byte(file:read(1)))
 	end
+
 	return string.char(table.unpack(byteArray))
 end
 
@@ -160,17 +195,25 @@ end
 local function multiLoad(file, picture, ocif7, ocif8) --MultiLoader for OCIF6-8.
 	picture[1] = string.byte(file:read(1)) + ocif8
 	picture[2] = string.byte(file:read(1)) + ocif8
+
 	local currentAlpha, currentSymbol, currentBackground, currentForeground, currentY
+
 	for alpha = 1, string.byte(file:read(1)) + ocif7 do
+
 		currentAlpha = string.byte(file:read(1)) / 255
+
 		for symbol = 1, readBytes(file, 2) + ocif7 do
 			currentSymbol = readUnicodeChar(file)
+
 			for background = 1, string.byte(file:read(1)) + ocif7 do
 				currentBackground = to24Bit(string.byte(file:read(1)))
+
 				for foreground = 1, string.byte(file:read(1)) + ocif7 do
 					currentForeground = to24Bit(string.byte(file:read(1)))
+
 					for y = 1, string.byte(file:read(1)) + ocif7 do
 						currentY = string.byte(file:read(1))
+
 						for x = 1, string.byte(file:read(1)) + ocif7 do
 							iset(
 								picture,
@@ -194,6 +237,7 @@ local Loader = {}
 Loader[5] = function(file, picture)
 	picture[1] = readBytes(file, 2)
 	picture[2] = readBytes(file, 2)
+
 	for i = 1, picture[1] * picture[2] do
 		table.insert(picture, to24Bit(string.byte(file:read(1))))
 		table.insert(picture, to24Bit(string.byte(file:read(1))))
@@ -216,10 +260,13 @@ end
 
 local function loadImage(path)
 	local file, reason = io.open(path, "rb")
+
 	if file then
 		local readedSignature = file:read(4)
+
 		if readedSignature == "OCIF" then
 			local encodingMethod = string.byte(file:read(1))
+
 			if Loader[encodingMethod] then
 				local picture = {}
 				local result, reason = xpcall(Loader[encodingMethod], debug.traceback, file, picture)
@@ -246,30 +293,65 @@ end
 
 local function flush(width, height)
 	if not width or not height then
-		width, height = GPUProxyGetResolution()
+		width, height = componentInvoke(GPUAddress, "getResolution")
 	end
 
 	currentFrameBackgrounds, currentFrameForegrounds, currentFrameSymbols, newFrameBackgrounds, newFrameForegrounds, newFrameSymbols = {}, {}, {}, {}, {}, {}
 	bufferWidth = width
 	bufferHeight = height
+
 	resetDrawLimit()
 
-	for y = 1, bufferHeight do
-		for x = 1, bufferWidth do
-			tableInsert(currentFrameBackgrounds, 0x010101)
-			tableInsert(currentFrameForegrounds, 0xFEFEFE)
-			tableInsert(currentFrameSymbols, " ")
+	for i = 1, bufferWidth * bufferHeight do
+		currentFrameBackgrounds[i] = 0x010101
+		newFrameBackgrounds[i] = 0x010101
 
-			tableInsert(newFrameBackgrounds, 0x010101)
-			tableInsert(newFrameForegrounds, 0xFEFEFE)
-			tableInsert(newFrameSymbols, " ")
-		end
+		currentFrameForegrounds[i] = 0xFEFEFE
+		newFrameForegrounds[i] = 0xFEFEFE
+
+		currentFrameSymbols[i] = " "
+		newFrameSymbols[i] = " "
 	end
 end
 
+local function getGPUAddress()
+	return GPUAddress
+end
+
+local function setGPUAddress(address)
+	GPUAddress = address
+
+	flush()
+end
+
+local function getScreenAddress()
+	return componentInvoke(GPUAddress, "getScreen")
+end
+
+local function getMaxResolution()
+	return componentInvoke(GPUAddress, "maxResolution")
+end
+
 local function setResolution(width, height)
-	GPUProxySetResolution(width, height)
+	componentInvoke(GPUAddress, "setResolution", width, height)
+
 	flush(width, height)
+end
+
+local function getColorDepth()
+	return componentInvoke(GPUAddress, "getDepth")
+end
+
+local function setColorDepth(...)
+	return componentInvoke(GPUAddress, "setDepth", ...)
+end
+
+local function getMaxColorDepth(...)
+	return componentInvoke(GPUAddress, "maxDepth")
+end
+
+local function getScreenAspectRatio()
+	return componentInvoke(getScreenAddress(), "getAspectRatio")
 end
 
 local function getResolution()
@@ -284,11 +366,12 @@ local function getHeight()
 	return bufferHeight
 end
 
-local function bind(address, reset)
-	local success, reason = GPUProxy.bind(address, reset)
+local function setScreenAddress(address, reset)
+	local success, reason = componentInvoke(GPUAddress, "bind", address, reset)
+
 	if success then
 		if reset then
-			setResolution(GPUProxy.maxResolution())
+			setResolution(getMaxResolution())
 		else
 			setResolution(bufferWidth, bufferHeight)
 		end
@@ -297,28 +380,12 @@ local function bind(address, reset)
 	end
 end
 
-local function getGPUProxy()
-	return GPUProxy
+local function getGPUProxy() --DEPRECATED, for backwards compatibility only
+	return component.proxy(GPUAddress or "")
 end
 
-local function updateGPUProxyMethods()
-	GPUProxyGet = GPUProxy.get
-	GPUProxyGetResolution = GPUProxy.getResolution
-	GPUProxyGetBackground = GPUProxy.getBackground
-	GPUProxyGetForeground = GPUProxy.getForeground
-
-	GPUProxySet = GPUProxy.set
-	GPUProxySetResolution = GPUProxy.setResolution
-	GPUProxySetBackground = GPUProxy.setBackground
-	GPUProxySetForeground = GPUProxy.setForeground
-
-	GPUProxyFill = GPUProxy.fill
-end
-
-local function setGPUProxy(proxy)
-	GPUProxy = proxy
-	updateGPUProxyMethods()
-	flush()
+local function setGPUProxy(proxy)  --DEPRECATED, for backwards compatibility only
+	return setGPUAddress(proxy.address)
 end
 
 local function getScaledResolution(scale)
@@ -328,10 +395,10 @@ local function getScaledResolution(scale)
 		scale = 0.1
 	end
 
-	local aspectWidth, aspectHeight = component.proxy(GPUProxy.getScreen()).getAspectRatio()
-	local maxWidth, maxHeight = GPUProxy.maxResolution()
+	local aspectWidth, aspectHeight = getScreenAspectRatio()
+	local maxWidth, maxHeight = getMaxResolution()
 	local proportion = 2 * (16 * aspectWidth - 4.5) / (16 * aspectHeight - 4.5)
-	 
+
 	local height = scale * mathMin(
 		maxWidth / proportion,
 		maxWidth,
@@ -395,6 +462,7 @@ local function drawRectangle(x, y, width, height, background, foreground, symbol
 	end
 
 	temp = bufferWidth * (y - 1) + x
+
 	local indexStepOnEveryLine = bufferWidth - width
 
 	if transparency then
@@ -468,7 +536,7 @@ local function blur(x, y, width, height, radius, color, transparency)
 
 				temp, bufferIndex = temp + 1, bufferIndex + 1
 			end
-			
+
 			temp = temp + indexStepOnEveryLine
 		end
 else
@@ -574,6 +642,7 @@ local function rasterizeLine(x1, y1, x2, y2, method)
 
 	local outLoopValue, outLoopValueCounter, outLoopValueTriggerIncrement = outLoopValueFrom, 1, inLoopValueDelta / outLoopValueDelta
 	local outLoopValueTrigger = outLoopValueTriggerIncrement
+
 	for inLoopValue = inLoopValueFrom, inLoopValueTo, inLoopValueFrom < inLoopValueTo and 1 or -1 do
 		if isReversed then
 			method(outLoopValue, inLoopValue)
@@ -593,7 +662,7 @@ local function rasterizeEllipse(centerX, centerY, radiusX, radiusY, method)
 		method(centerX + XP, centerY + YP)
 		method(centerX - XP, centerY + YP)
 		method(centerX - XP, centerY - YP)
-		method(centerX + XP, centerY - YP) 
+		method(centerX + XP, centerY - YP)
 	end
 
 	local x, y, changeX, changeY, ellipseError, twoASquare, twoBSquare = radiusX, 0, radiusY * radiusY * (1 - 2 * radiusX), radiusX * radiusX, 0, 2 * radiusX * radiusX, 2 * radiusY * radiusY
@@ -601,7 +670,7 @@ local function rasterizeEllipse(centerX, centerY, radiusX, radiusY, method)
 
 	while stoppingX >= stoppingY do
 		rasterizeEllipsePoints(x, y)
-		
+
 		y, stoppingY, ellipseError = y + 1, stoppingY + twoASquare, ellipseError + changeY
 		changeY = changeY + twoASquare
 
@@ -613,12 +682,12 @@ local function rasterizeEllipse(centerX, centerY, radiusX, radiusY, method)
 
 	x, y, changeX, changeY, ellipseError, stoppingX, stoppingY = 0, radiusY, radiusY * radiusY, radiusX * radiusX * (1 - 2 * radiusY), 0, 0, twoASquare * radiusY
 
-	while stoppingX <= stoppingY do 
+	while stoppingX <= stoppingY do
 		rasterizeEllipsePoints(x, y)
-		
+
 		x, stoppingX, ellipseError = x + 1, stoppingX + twoBSquare, ellipseError + changeX
 		changeX = changeX + twoBSquare
-		
+
 		if (2 * ellipseError + changeY) > 0 then
 			y, stoppingY, ellipseError = y - 1, stoppingY - twoASquare, ellipseError + changeY
 			changeY = changeY + twoASquare
@@ -634,9 +703,9 @@ local function rasterizePolygon(centerX, centerY, startX, startY, countOfEdges, 
 	local halfRadius = radius / 2
 	local startDegree = math.deg(math.asin(deltaX / radius))
 
-	local function round(num) 
+	local function round(num)
 		if num >= 0 then
-			return math.floor(num + 0.5) 
+			return math.floor(num + 0.5)
 		else
 			return math.ceil(num - 0.5)
 		end
@@ -646,6 +715,7 @@ local function rasterizePolygon(centerX, centerY, startX, startY, countOfEdges, 
 		local radDegree = math.rad(degree)
 		local deltaX2 = math.sin(radDegree) * radius
 		local deltaY2 = math.cos(radDegree) * radius
+
 		return round(centerX + deltaX2), round(centerY + (deltaY >= 0 and deltaY2 or -deltaY2))
 	end
 
@@ -679,7 +749,7 @@ end
 local function drawText(x, y, textColor, data, transparency)
 	if y >= drawLimitY1 and y <= drawLimitY2 then
 		local charIndex, screenIndex = 1, bufferWidth * (y - 1) + x
-		
+
 		for charIndex = 1, unicodeLen(data) do
 			if x >= drawLimitX1 and x <= drawLimitX2 then
 				if transparency then
@@ -708,6 +778,7 @@ local function drawImage(x, y, picture, blendForeground)
 
 	-- Right
 	temp = x + clippedImageWidth - 1
+
 	if temp > drawLimitX2 then
 		clippedImageWidth = clippedImageWidth - temp + drawLimitX2
 	end
@@ -720,6 +791,7 @@ local function drawImage(x, y, picture, blendForeground)
 
 	-- Bottom
 	temp = y + clippedImageHeight - 1
+
 	if temp > drawLimitY2 then
 		clippedImageHeight = clippedImageHeight - temp + drawLimitY2
 	end
@@ -758,14 +830,14 @@ local function drawImage(x, y, picture, blendForeground)
 
 			screenIndex, pictureIndex = screenIndex + 1, pictureIndex + 4
 		end
-	
+
 		screenIndex, pictureIndex = screenIndex + screenIndexStep, pictureIndex + pictureIndexStep
 	end
 end
 
 local function drawFrame(x, y, width, height, color)
 	local stringUp, stringDown, x2 = "┌" .. string.rep("─", width - 2) .. "┐", "└" .. string.rep("─", width - 2) .. "┘", x + width - 1
-	
+
 	drawText(x, y, color, stringUp); y = y + 1
 	for i = 1, height - 2 do
 		drawText(x, y, color, "│")
@@ -830,7 +902,7 @@ local function drawSemiPixelRectangle(x, y, width, height, color)
 
 		if realY >= drawLimitY1 and realY <= drawLimitY2 then
 			evenY = pseudoY % 2 == 0
-			
+
 			for pseudoX = x, x + width - 1 do
 				if pseudoX >= drawLimitX1 and pseudoX <= drawLimitX2 then
 					semiPixelRawSet(index, color, evenY)
@@ -873,9 +945,11 @@ end
 
 local function getConnectionPoints(points, time)
 	local connectionPoints = {}
+
 	for point = 1, #points - 1 do
 		tableInsert(connectionPoints, getPointTimedPosition(points[point], points[point + 1], time))
 	end
+
 	return connectionPoints
 end
 
@@ -889,10 +963,11 @@ end
 
 local function drawSemiPixelCurve(points, color, precision)
 	local linePoints = {}
+
 	for time = 0, 1, precision or 0.01 do
 		tableInsert(linePoints, getMainPointPosition(points, time))
 	end
-	
+
 	for point = 1, #linePoints - 1 do
 		drawSemiPixelLine(mathFloor(linePoints[point].x), mathFloor(linePoints[point].y), mathFloor(linePoints[point + 1].x), mathFloor(linePoints[point + 1].y), color)
 	end
@@ -900,7 +975,7 @@ end
 
 --------------------------------------------------------------------------------
 
-local function update(force)	
+local function update(force)
 	local index, indexStepOnEveryLine, changes = bufferWidth * (drawLimitY1 - 1) + drawLimitX1, (bufferWidth - drawLimitX2 + drawLimitX1 - 1), {}
 	local x, equalChars, equalCharsIndex, charX, charIndex, currentForeground
 	local currentFrameBackground, currentFrameForeground, currentFrameSymbol, changesCurrentFrameBackground, changesCurrentFrameBackgroundCurrentFrameForeground
@@ -909,7 +984,8 @@ local function update(force)
 
 	for y = drawLimitY1, drawLimitY2 do
 		x = drawLimitX1
-		while x <= drawLimitX2 do			
+
+		while x <= drawLimitX2 do
 			-- Determine if some pixel data was changed (or if <force> argument was passed)
 			if
 				currentFrameBackgrounds[index] ~= newFrameBackgrounds[index] or
@@ -925,9 +1001,10 @@ local function update(force)
 
 				-- Look for pixels with equal chars from right of current pixel
 				equalChars, equalCharsIndex, charX, charIndex = {currentFrameSymbol}, 2, x + 1, index + 1
+
 				while charX <= drawLimitX2 do
 					-- Pixels becomes equal only if they have same background and (whitespace char or same foreground)
-					if	
+					if
 						currentFrameBackground == newFrameBackgrounds[charIndex] and
 						(
 							newFrameSymbols[charIndex] == " " or
@@ -952,12 +1029,12 @@ local function update(force)
 				changes[currentFrameBackground] = changesCurrentFrameBackground
 				changesCurrentFrameBackgroundCurrentFrameForeground = changesCurrentFrameBackground[currentFrameForeground] or {index = 1}
 				changesCurrentFrameBackground[currentFrameForeground] = changesCurrentFrameBackgroundCurrentFrameForeground
-				
+
 				changesCurrentFrameBackgroundCurrentFrameForegroundIndex = changesCurrentFrameBackgroundCurrentFrameForeground.index
 				changesCurrentFrameBackgroundCurrentFrameForeground[changesCurrentFrameBackgroundCurrentFrameForegroundIndex], changesCurrentFrameBackgroundCurrentFrameForegroundIndex = x, changesCurrentFrameBackgroundCurrentFrameForegroundIndex + 1
 				changesCurrentFrameBackgroundCurrentFrameForeground[changesCurrentFrameBackgroundCurrentFrameForegroundIndex], changesCurrentFrameBackgroundCurrentFrameForegroundIndex = y, changesCurrentFrameBackgroundCurrentFrameForegroundIndex + 1
 				changesCurrentFrameBackgroundCurrentFrameForeground[changesCurrentFrameBackgroundCurrentFrameForegroundIndex], changesCurrentFrameBackgroundCurrentFrameForegroundIndex = tableConcat(equalChars), changesCurrentFrameBackgroundCurrentFrameForegroundIndex + 1
-				
+
 				x, index, changesCurrentFrameBackgroundCurrentFrameForeground.index = x + equalCharsIndex - 2, index + equalCharsIndex - 2, changesCurrentFrameBackgroundCurrentFrameForegroundIndex
 			end
 
@@ -966,19 +1043,19 @@ local function update(force)
 
 		index = index + indexStepOnEveryLine
 	end
-	
+
 	-- Draw grouped pixels on screen
 	for background, foregrounds in pairs(changes) do
-		GPUProxySetBackground(background)
+		componentInvoke(GPUAddress, "setBackground", background)
 
 		for foreground, pixels in pairs(foregrounds) do
 			if currentForeground ~= foreground then
-				GPUProxySetForeground(foreground)
+				componentInvoke(GPUAddress, "setForeground", foreground)
 				currentForeground = foreground
 			end
 
 			for i = 1, #pixels, 3 do
-				GPUProxySet(pixels[i], pixels[i + 1], pixels[i + 2])
+				componentInvoke(GPUAddress, "set", pixels[i], pixels[i + 1], pixels[i + 2])
 			end
 		end
 	end
@@ -996,16 +1073,31 @@ return {
 	resetDrawLimit = resetDrawLimit,
 	getDrawLimit = getDrawLimit,
 	flush = flush,
+
 	setResolution = setResolution,
-	bind = bind,
-	setGPUProxy = setGPUProxy,
-	getGPUProxy = getGPUProxy,
+	getMaxResolution = getMaxResolution,
+
+	bind = setScreenAddress, --DEPRECATED, for backwards compatibility only
+	setGPUProxy = setGPUProxy, --DEPRECATED, for backwards compatibility only
+	getGPUProxy = getGPUProxy, --DEPRECATED, for backwards compatibility only
+
+	setGPUAddress = setGPUAddress,
+	getGPUAddress = getGPUAddress,
+	setScreenAddress = setScreenAddress,
+
+	getColorDepth = getColorDepth,
+	setColorDepth = setColorDepth,
+	getMaxColorDepth = getMaxColorDepth,
+
 	getScaledResolution = getScaledResolution,
 	getResolution = getResolution,
 	getWidth = getWidth,
 	getHeight = getHeight,
 	getCurrentFrameTables = getCurrentFrameTables,
 	getNewFrameTables = getNewFrameTables,
+
+	getScreenAspectRatio = getScreenAspectRatio,
+	getScreenAddress = getScreenAddress,
 
 	rawSet = rawSet,
 	rawGet = rawGet,

@@ -7,7 +7,7 @@ Port by [Bs0Dd](https://github.com/Bs0Dd)
 
 ## Download
 
-* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standard version of library (34Kb)
+* `pastebin get CsY9HpHB /usr/lib/NyaDraw.lua` to load a standard version of library (35Kb)
 
 
 * `pastebin get PqqutTfX /usr/lib/NyaDrMini.lua` to load a minified (but full-functional) version of library (14Kb)
@@ -16,12 +16,25 @@ Port by [Bs0Dd](https://github.com/Bs0Dd)
 
 | Contents |
 | ----- |
-| [Main methods:](#main-methods) |
-| [   engine.getResolution](#enginegetresolution-int-width-int-height) |
-| [   engine.setResolution](#enginesetresolution-width-height-) |
+| [Components bindings:](#components-bindings) |
+| [   engine.setGPUAddress](#enginesetgpuaddress-address-) |
+| [   engine.getGPUAddress](#enginegetgpuaddress-string-address) |
+| [   engine.setScreenAddress](#enginesetscreenaddress-address-reset-) |
+| [   engine.getScreenAddress](#enginegetscreenaddress-string-address) |
 | [   engine.setGPUProxy](#enginesetgpuproxy-proxy-) |
 | [   engine.getGPUProxy](#enginegetgpuproxy-table-proxy) |
-| [   engine.bind](#enginebind-address-) |
+| [   engine.bind](#enginebind-address-reset-) |
+| [Screen resolution:](#screen-resolution) |
+| [   engine.getResolution](#enginegetresolution-int-width-int-height) |
+| [   engine.setResolution](#enginesetresolution-width-height-) |
+| [   engine.getMaxResolution](#enginegetmaxresolution-int-width-int-height) |
+| [   engine.getScreenAspectRatio](#enginegetscreenaspectratio-int-width-int-height) |
+| [   engine.getScaledResolution](#enginegetscaledresolutionfloat-01-10-scale) |
+| [Color depth:](#color-depth) |
+| [   engine.setColorDepth](#enginesetcolordepth-depth-) |
+| [   engine.getColorDepth](#enginegetcolordepth-int-depth) |
+| [   engine.getMaxColorDepth](#enginegetmaxcolordepth-int-depth) |
+| [ImageLoad methods:](#imageload-methods) |
 | [   engine.loadImage](#engineloadimage-path--table-picture) |
 | [Rendering methods:](#rendering-methods) |
 | [   engine.update](#engineupdate-force-) |
@@ -29,14 +42,15 @@ Port by [Bs0Dd](https://github.com/Bs0Dd)
 | [   engine.getDrawLimit](#enginegetdrawlimit-int-x1-int-y1-int-x2-int-y2) |
 | [   engine.copy](#enginecopy-x-y-width-height--table-pixeldata) |
 | [   engine.paste](#enginepaste-x-y-pixeldata-) |
-| [   engine.set](#enginepaste-x-y-pixeldata-) |
-| [   engine.get](#enginepaste-x-y-pixeldata-) |
+| [   engine.set](#engineset-x-y-background-foreground-symbol-) |
+| [   engine.get](#engineget-x-y--int-background-int-foreground-string-symbol) |
 | [   engine.drawRectangle](#enginedrawrectangle-x-y-width-height-background-foreground-symbol-transparency-) |
 | [   engine.clear](#engineclear-color-transparency-) |
 | [   engine.drawText](#enginedrawtext-x-y-color-text-transparency-) |
 | [   engine.drawImage](#enginedrawimage-x-y-picture-) |
 | [   engine.drawLine](#enginedrawline-x1-y1-x2-y2-background-foreground-symbol-) |
 | [   engine.drawEllipse](#enginedrawellipse-centerx-centery-radiusx-radiusy-background-foreground-symbol-) |
+| [   engine.blur](#engineblurx-y-width-height-radius-blendcolor-transparency) |
 | [Semi-pixel rendering methods:](#semi-pixel-rendering-methods) |
 | [   engine.semiPixelSet](#enginesemipixelset-x-y-color-) |
 | [   engine.drawSemiPixelRectangle](#enginedrawsemipixelrectangle-x-y-width-height-color-) |
@@ -52,43 +66,98 @@ Port by [Bs0Dd](https://github.com/Bs0Dd)
 | [   engine.getNewFrameTables](#enginegetnewframetables-table-newframebackgrounds-table-newframeforegrounds-table-newframesymbols) |
 | [Practical example](#practical-example) |
 
-### Main methods
+### Components bindings
 
-engine.**getResolution**(): *int* width, *int* height
------------------------------------------------------------
-Get screen buffer resolution. There's also engine.**getWidth**() and engine.**getHeight**() methods for your comfort.
+#### engine.**setGPUAddress**( address )
 
-engine.**setResolution**( width, height )
------------------------------------------------------------
+| Type | Parameter | Description |
+| ------ | ------ | ------ |
+| *string* | address | GPU component address |
+
+Sets the GPU component address that sould be used for drawing operations. Content of buffer will be cleared with black pixels and whitespace symbol
+
+#### engine.**getGPUAddress**(): *string* address
+
+Returns address of currently used GPU component
+
+#### engine.**setScreenAddress**( address, [reset] )
+
+| Type | Parameter | Description |
+| ------ | ------ | ------ |
+| *string* | address | Screen component address |
+| [*boolean* | reset] | Reset screen resolution to max |
+
+Binds GPU used by library to given screen component address. Content of buffer will be cleared with black pixels and whitespace symbol
+
+#### engine.**getScreenAddress**(): *string* address
+
+Returns address of currently bound screen
+
+#### engine.**setGPUProxy**( proxy )
+
+| Type | Parameter | Description |
+| ------ | ------ | ------ |
+| *table* | proxy | Proxy table to GPU card |
+
+**DEPRECATRED**, for backwards compatibility only. Sets the GPU component proxy is used by library to given one. Content of buffer will be cleared with black pixels and whitespace symbol.
+
+#### engine.**getGPUProxy**(): *table* proxy
+
+**DEPRECATRED**, for backwards compatibility only. Get a pointer to currently bound GPU component proxy.
+
+#### engine.**bind**( address, [reset] )
+
+**DEPRECATRED**, for backwards compatibility only. Now it's an alias of the **setScreenAddress** function.
+
+### Screen resolution
+
+#### engine.**getResolution**(): *int* width, *int* height
+
+Returns screen buffer resolution. There's also engine.**getWidth**() and engine.**getHeight**() methods for your convenience.
+
+#### engine.**setResolution**( width, height )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | width | Screen buffer width |
 | *int* | height | Screen buffer height |
 
-Set screen buffer and GPU resolution. Content of buffer will be cleared with black pixels and whitespace symbol.
+Sets screen buffer and GPU resolution. Content of buffer will be cleared with black pixels and whitespace symbol.
 
-engine.**setGPUProxy**( proxy )
------------------------------------------------------------
+#### engine.**getMaxResolution**(): *int* width, *int* height
+
+Returns largets suported screen resolution
+
+#### engine.**getScreenAspectRatio**(): *int* width, *int* height
+
+Returns multiblock screen sturcture size in *blocks*
+
+#### engine.**getScaledResolution**([float [0.1; 1.0] scale]):
+
+Returns "best" screen resolution that can be fitted on multiblock screen structure with smallest possible "black lines" size. Optional `scale` argument will apply multiplication factor when while calculating result.
+
+### Color depth
+
+#### engine.**setColorDepth**( depth ):
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
-| *table* | proxy | Proxy table to GPU card |
+| *int* | depth | GPU color depth in bits (1, 4 or 8) |
 
-Sets the GPU component proxy is used by library to given one. Content of buffer will be cleared with black pixels and whitespace symbol.
+Sets currenlty used GPU color depth
 
-engine.**getGPUProxy**(): *table* proxy
------------------------------------------------------------
-Get a pointer to currently bound GPU component proxy.
+#### engine.**getColorDepth**(): *int* depth
 
-engine.**bind**( address )
------------------------------------------------------------
-| Type | Parameter | Description |
-| ------ | ------ | ------ |
-| *string* | address | GPU component address |
+Returns currenlty used GPU color depth
 
-Set the GPU component address is used by library. Content of buffer will be cleared with black pixels and whitespace symbol.
+#### engine.**getMaxColorDepth**(): *int* depth
 
-engine.**loadImage**( path ): *table* picture
------------------------------------------------------------
+Returns largest supported GPU color depth
+
+### ImageLoad methods
+
+#### engine.**loadImage**( path ): *table* picture
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *string* | path | Path to the picture to be loaded |
@@ -97,16 +166,16 @@ Loads a OCIF picture at the specified path and returns it as a table for, for ex
 
 ### Rendering methods
 
-engine.**update**( [force] )
------------------------------------------------------------
+#### engine.**update**( [force] )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | [*boolean* | force] | Force content drawing |
 
 Checks of what pixels need to be drawn and draws them on screen. If optional argument **force** is specified, then the contents of screen buffer will be drawn completely and regardless of the changed pixels.
 
-engine.**setDrawLimit**( x1, y1, x2, y2 )
------------------------------------------------------------
+#### engine.**setDrawLimit**( x1, y1, x2, y2 )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x1 | First point coordinate of draw limit by x-axis |
@@ -114,14 +183,14 @@ engine.**setDrawLimit**( x1, y1, x2, y2 )
 | *int* | x2 | Second point coordinate of draw limit by x-axis |
 | *int* | y2 | Second point coordinate of draw limit by y-axis |
 
-Set buffer draw limit to the specified values. In this case, any operations that go beyond the limits will be ignored. By default, the buffer always has a drawing limit in the ranges **x ∈ [1; buffer.width]** and **y ∈ [1; buffer.height]** 
+Set buffer draw limit to the specified values. In this case, any operations that go beyond the limits will be ignored. By default, the buffer always has a drawing limit in the ranges **x ∈ [1; buffer.width]** and **y ∈ [1; buffer.height]**
 
-engine.**getDrawLimit**(): *int* x1, *int* y1, *int* x2, *int* y2
------------------------------------------------------------
+#### engine.**getDrawLimit**(): *int* x1, *int* y1, *int* x2, *int* y2
+
 Get currently set draw limit
 
-engine.**copy**( x, y, width, height ): *table* pixelData
------------------------------------------------------------
+#### engine.**copy**( x, y, width, height ): *table* pixelData
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Copied area coordinate by x-axis |
@@ -131,8 +200,8 @@ engine.**copy**( x, y, width, height ): *table* pixelData
 
 Copy content of specified area from screen buffer and return it as a table. Later it can be used with engine.**paste**(...).
 
-engine.**paste**( x, y, pixelData )
------------------------------------------------------------
+#### engine.**paste**( x, y, pixelData )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Paste coordinate by x-axis |
@@ -141,8 +210,8 @@ engine.**paste**( x, y, pixelData )
 
 Paste the copied contents of screen buffer to the specified coordinates.
 
-engine.**set**( x, y, background, foreground, symbol )
------------------------------------------------------------
+#### engine.**set**( x, y, background, foreground, symbol )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Screen coordinate by x-axis |
@@ -153,8 +222,8 @@ engine.**set**( x, y, background, foreground, symbol )
 
 Set value of specified pixel on screen.
 
-engine.**get**( x, y ): *int* background, *int* foreground, *string* symbol
------------------------------------------------------------
+#### engine.**get**( x, y ): *int* background, *int* foreground, *string* symbol
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Screen coordinate by x-axis |
@@ -162,8 +231,8 @@ engine.**get**( x, y ): *int* background, *int* foreground, *string* symbol
 
 Get value of specified pixel on screen.
 
-engine.**drawRectangle**( x, y, width, height, background, foreground, symbol, transparency )
------------------------------------------------------------
+#### engine.**drawRectangle**( x, y, width, height, background, foreground, symbol, transparency )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Rectangle coordinate by x-axis |
@@ -177,8 +246,8 @@ engine.**drawRectangle**( x, y, width, height, background, foreground, symbol, t
 
 Fill the rectangular area with the specified pixel data. If optional transparency parameter is specified, the rectangle will "cover" existing pixel data, like a glass.
 
-engine.**clear**( [color, transparency] )
------------------------------------------------------------
+#### engine.**clear**( [color, transparency] )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | [*int* | background] | Optional background color |
@@ -186,8 +255,8 @@ engine.**clear**( [color, transparency] )
 
 It works like engine.**drawRectangle**(...), but it applies immediately to all the pixels in the buffer. If arguments are not passed, then the buffer is filled with the standard black color and the whitespace symbol.
 
-engine.**drawText**( x, y, color, text, transparency )
------------------------------------------------------------
+#### engine.**drawText**( x, y, color, text, transparency )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Text coordinate by x-axis |
@@ -198,8 +267,8 @@ engine.**drawText**( x, y, color, text, transparency )
 
 Draw the text of the specified color. The background color under text will remain the same. It is also possible to set the transparency of the text.
 
-engine.**drawImage**( x, y, picture )
------------------------------------------------------------
+#### engine.**drawImage**( x, y, picture )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Image coordinate by x-axis |
@@ -208,8 +277,8 @@ engine.**drawImage**( x, y, picture )
 
 Draw image that was loaded earlier via engine.**loadImage**(...) method. The alpha channel of image is also supported.
 
-engine.**drawLine**( x1, y1, x2, y2, background, foreground, symbol )
------------------------------------------------------------
+#### engine.**drawLine**( x1, y1, x2, y2, background, foreground, symbol )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x1 | First point coordinate by x-axis |
@@ -222,8 +291,8 @@ engine.**drawLine**( x1, y1, x2, y2, background, foreground, symbol )
 
 Draw a line with specified pixel data from first point to second.
 
-engine.**drawEllipse**( centerX, centerY, radiusX, radiusY, background, foreground, symbol )
------------------------------------------------------------
+#### engine.**drawEllipse**( centerX, centerY, radiusX, radiusY, background, foreground, symbol )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | centerX | Ellipse middle point by x-axis |
@@ -236,12 +305,28 @@ engine.**drawEllipse**( centerX, centerY, radiusX, radiusY, background, foregrou
 
 Draw ellipse with specified pixel data.
 
+#### engine.**blur**(x, y, width, height, radius, [blendColor, transparency]):
+
+| Type | Parameter | Description |
+| ------ | ------ | ------ |
+| *int* | x | Blur coordinate by x-axis |
+| *int* | y | Blur coordinate by y-axis |
+| *int* | width | Blur width |
+| *int* | height | Blur height |
+| *int* | radius | Blur radius |
+| [*int* | blendColor] | Optionally applied after blurring to create "glassy panel effect" |
+| [*float* [0.0; 1.0] | transparency] | Optional blur transparency |
+
+Applies blur effect with box kernel to given rectangular region with given radius. Optionally, a blend color with transparency can be applied after blurring to create "glassy panel effect".
+
+Note that this method is **extremely slow**, requires a **lot of RAM** and it should be used only on high-end computers (servers with 4x Tier 3 RAM moudles are preferred)
+
 ### Semi-pixel rendering methods
 
 All semi-pixel methods allow to avoid the effect of doubling pixel height of the console pseudographics using special symbols like "▄". In this case, the transmitted coordinates along the **Y** axis must belong to the interval **[0; buffer.height * 2]**.
 
-engine.**semiPixelSet**( x, y, color )
------------------------------------------------------------
+#### engine.**semiPixelSet**( x, y, color )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x1 | Coordinate by x-axis |
@@ -250,8 +335,8 @@ engine.**semiPixelSet**( x, y, color )
 
 Set semi-pixel value in specified coordinates.
 
-engine.**drawSemiPixelRectangle**( x, y, width, height, color )
------------------------------------------------------------
+#### engine.**drawSemiPixelRectangle**( x, y, width, height, color )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Rectangle coordinate by x-axis |
@@ -262,8 +347,8 @@ engine.**drawSemiPixelRectangle**( x, y, width, height, color )
 
 Draw semi-pixel rectangle.
 
-engine.**drawSemiPixelLine**( x1, y1, x2, y2, color )
------------------------------------------------------------
+#### engine.**drawSemiPixelLine**( x1, y1, x2, y2, color )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x1 | First point coordinate by x-axis |
@@ -274,8 +359,8 @@ engine.**drawSemiPixelLine**( x1, y1, x2, y2, color )
 
 Rasterize a semi-pixel line witch specified color.
 
-engine.**drawSemiPixelEllipse**( centerX, centerY, radiusX, radiusY, color )
------------------------------------------------------------
+#### engine.**drawSemiPixelEllipse**( centerX, centerY, radiusX, radiusY, color )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | centerX | Ellipse middle point by x-axis |
@@ -286,22 +371,22 @@ engine.**drawSemiPixelEllipse**( centerX, centerY, radiusX, radiusY, color )
 
 Draw semi-pixel ellipse with specified color.
 
-engine.**drawSemiPixelCurve**( points, color, accuracy )
------------------------------------------------------------
+#### engine.**drawSemiPixelCurve**( points, color, accuracy )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *table* | points | Table with structure ```{{x = 32, y = 2}, {x = 2, y = 2}, {x = 2, y = 98}}``` that contains a set of points for drawing curve |
 | *int* | color | Curve color |
 | *float* | accuracy | Curve accuracy. Less = more accurate |
 
-Draw the [Bezier Curve](https://en.wikipedia.org/wiki/B%C3%A9zier_curve) with specified color
+Draw the [Bezier Curve](https://en.wikipedia.org/wiki/B%C3%A9zier_curve) with specified color. The accuracy argument means drawing iteration step. Less accuracy means more realistic curve.
 
 ### Auxiliary methods
 
 The following methods are used by the library itself or by applications that require maximum performance and calculate the pixel data of the buffer manually. In most cases, they do not come in handy, but they are listed *just in case*.
 
-engine.**flush**( [width, height] )
------------------------------------------------------------
+#### engine.**flush**( [width, height] )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | width | New screen buffer width |
@@ -309,8 +394,8 @@ engine.**flush**( [width, height] )
 
 Set screen buffer resolution to the specified one and fill it with black pixels and whitespace stringacter. Unlike buffer.**setResolution**() it does not change the current resolution of the GPU. If optional arguments are **not specified**, then the buffer size becomes equivalent to the current GPU resolution.
 
-engine.**getIndex**( x, y ): **int** index
------------------------------------------------------------
+#### engine.**getIndex**( x, y ): **int** index
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | x | Screen coordinate by x-axis |
@@ -318,8 +403,8 @@ engine.**getIndex**( x, y ): **int** index
 
 Convert screen coordinates to the screen buffer index. For example, a **2x1** pixel has a buffer index equals **4**, and a pixel of **3x1** has a buffer index equals **7**.
 
-engine.**rawSet**( index, background, foreground, symbol )
------------------------------------------------------------
+#### engine.**rawSet**( index, background, foreground, symbol )
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | index | Screen buffer index |
@@ -329,21 +414,21 @@ engine.**rawSet**( index, background, foreground, symbol )
 
 Set specified data values to pixel with specified index.
 
-engine.**rawGet**( index ): **int** background, **int** foreground, **string** symbol
------------------------------------------------------------
+#### engine.**rawGet**( index ): **int** background, **int** foreground, **string** symbol
+
 | Type | Parameter | Description |
 | ------ | ------ | ------ |
 | *int* | index | Screen buffer index |
 
 Get data values of pixel with specified index.
 
-engine.**getCurrentFrameTables**(): **table** currentFrameBackgrounds, **table** currentFrameForegrounds, **table** currentFrameSymbols
------------------------------------------------------------
+#### engine.**getCurrentFrameTables**(): **table** currentFrameBackgrounds, **table** currentFrameForegrounds, **table** currentFrameSymbols
+
 
 Get current screen buffer frames (that is displayed on screen) that contains pixel data. This method is used in rare cases where maximum performance and manual buffer changing pixel-by-pixel is required.
 
-engine.**getNewFrameTables**(): **table** newFrameBackgrounds, **table** newFrameForegrounds, **table** newFrameSymbols
------------------------------------------------------------
+#### engine.**getNewFrameTables**(): **table** newFrameBackgrounds, **table** newFrameForegrounds, **table** newFrameSymbols
+
 
 Works like engine.**getCurrentFrameTables**(), but returns frames that user is changing in realtime (before calling buffer.**drawChanges**())
 
@@ -354,9 +439,9 @@ Works like engine.**getCurrentFrameTables**(), but returns frames that user is c
 local engine = require("NyaDraw")
 
 -- Set GPU for working
-engine.setGPUProxy(require("component").gpu)
+engine.setGPUAddress(require("component").gpu.address)
 
---------------------------------------------------------------------------------
+---------------------
 
 -- Load image from file and draw it to screen engine
 engine.drawImage(1, 1, engine.loadImage("/Keyboard.pic"))
@@ -389,6 +474,6 @@ engine.drawSemiPixelCurve(
 engine.update()
 ```
 
-Result: 
+Result:
 
 ![Example](https://i.imgur.com/ISIdpu8.png)
